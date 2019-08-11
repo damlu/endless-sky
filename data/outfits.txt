@@ -18,6 +18,13 @@ outfit "Cooling Ducts"
 	"cooling" 5
 	description "When trying to cram as many high-powered outfits as possible into a ship, occasionally you reach the point where it is sporadically overheating and shutting down. In that case, you may need to install one of these."
 
+outfit "Big ol' Dick"
+	plural "Big 'ol Dicks"
+	category "Systems"
+	cost 1000
+	thumbnail "outfit/big ol dick"
+	description "It's a big ol' donger."
+
 outfit "Water Coolant System"
 	category "Systems"
 	cost 25000

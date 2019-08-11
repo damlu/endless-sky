@@ -154,6 +154,7 @@ outfitter "Wanderer Basics"
 	"Small Bunk Room"
 	"Local Map"
 	"Hyperdrive"
+	"Big ol' Dick"
 
 outfitter "Wanderer Advanced"
 	"Sunbeam"
@@ -182,6 +183,7 @@ outfitter "Wanderer Advanced"
 	"Bunk Room"
 	"Local Map"
 	"Hyperdrive"
+	"Big ol' Dick"
 
 
 # Hails:
