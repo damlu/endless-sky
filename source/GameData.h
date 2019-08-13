@@ -38,11 +38,13 @@ class Minable;
 class Mission;
 class News;
 class Outfit;
+class Bodymod;
 class Person;
 class Phrase;
 class Planet;
 class Politics;
 class Ship;
+class Suit;
 class Sprite;
 class StarField;
 class StartConditions;
@@ -102,12 +104,16 @@ public:
 	static const Set<Minable> &Minables();
 	static const Set<Mission> &Missions();
 	static const Set<Outfit> &Outfits();
+	static const Set<Bodymod> &Bodymods();
 	static const Set<Sale<Outfit>> &Outfitters();
+	static const Set<Sale<Bodymod>> &Bodymodters();
 	static const Set<Person> &Persons();
 	static const Set<Phrase> &Phrases();
 	static const Set<Planet> &Planets();
 	static const Set<Ship> &Ships();
+	static const Set<Suit> &Suits();
 	static const Set<Sale<Ship>> &Shipyards();
+	static const Set<Sale<Suit>> &Suityards();
 	static const Set<System> &Systems();
 	
 	static const Government *PlayerGovernment();
@@ -147,6 +153,7 @@ private:
 	static std::map<std::string, std::shared_ptr<ImageSet>> FindImages();
 	
 	static void PrintShipTable();
+	static void PrintSuitTable();
 	static void PrintWeaponTable();
 };
 

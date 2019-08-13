@@ -123,6 +123,8 @@ bool ImageSet::IsMasked(const string &path)
 {
 	if(path.length() >= 5 && !path.compare(0, 5, "ship/"))
 		return true;
+	if(path.length() >= 5 && !path.compare(0, 5, "suit/"))
+		return true;
 	if(path.length() >= 9 && !path.compare(0, 9, "asteroid/"))
 		return true;
 	

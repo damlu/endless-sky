@@ -22,7 +22,9 @@ PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 class DataNode;
 class DataWriter;
 class Outfit;
+class Bodymod;
 class Ship;
+class Suit;
 
 
 
@@ -43,21 +45,33 @@ public:
 	// Check if any records have been loaded.
 	bool IsLoaded() const;
 	// If no records have been loaded, initialize with an entire fleet.
-	void Init(const std::vector<std::shared_ptr<Ship>> &fleet, int day);
+	void Init(const std::vector<std::shared_ptr<Ship>> &fleet, const std::vector<std::shared_ptr<Suit>> &army, int day);
 	
 	// Add a ship, and all its outfits, to the depreciation record.
 	void Buy(const Ship &ship, int day, Depreciation *source = nullptr);
+	// Add a suit, and all its bodymods, to the depreciation record.
+	void Buy(const Suit &suit, int day, Depreciation *source = nullptr);
 	// Add a single outfit to the depreciation record.
 	void Buy(const Outfit *outfit, int day, Depreciation *source = nullptr);
+	// Add a single bodymod to the depreciation record.
+	void Buy(const Bodymod *bodymod, int day, Depreciation *source = nullptr);
 	
 	// Get the value of an entire fleet.
 	int64_t Value(const std::vector<std::shared_ptr<Ship>> &fleet, int day) const;
+	// Get the value of an entire army.
+	int64_t Value(const std::vector<std::shared_ptr<Suit>> &army, int day) const;
 	// Get the value of a ship, along with all its outfits.
 	int64_t Value(const Ship &ship, int day) const;
+	// Get the value of a suit, along with all its bodymods.
+	int64_t Value(const Suit &suit, int day) const;
 	// Get the value just of the chassis of a ship.
 	int64_t Value(const Ship *ship, int day, int count = 1) const;
+	// Get the value just of the chassis of a suit.
+	int64_t Value(const Suit *suit, int day, int count = 1) const;
 	// Get the value of an outfit.
 	int64_t Value(const Outfit *outfit, int day, int count = 1) const;
+	// Get the value of an bodymod.
+	int64_t Value(const Bodymod *bodymod, int day, int count = 1) const;
 	
 	
 private:
@@ -82,7 +96,9 @@ private:
 	bool isLoaded = false;
 	
 	std::map<const Ship *, std::map<int, int>> ships;
+	std::map<const Suit *, std::map<int, int>> suits;
 	std::map<const Outfit *, std::map<int, int>> outfits;
+	std::map<const Bodymod *, std::map<int, int>> bodymods;
 };
 
 

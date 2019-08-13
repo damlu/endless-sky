@@ -16,7 +16,9 @@ PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 #include "DataWriter.h"
 #include "GameData.h"
 #include "Outfit.h"
+#include "Bodymod.h"
 #include "Ship.h"
+#include "Suit.h"
 
 #include <algorithm>
 #include <cmath>
@@ -53,14 +55,21 @@ void Depreciation::Load(const DataNode &node)
 	for(const DataNode &child : node)
 	{
 		bool isShip = (child.Token(0) == "ship");
+		bool isSuit = (child.Token(0) == "suit");
+
 		bool isOutfit = (child.Token(0) == "outfit");
-		if(!(isShip || isOutfit) || child.Size() < 2)
+		bool isBodymod = (child.Token(0) == "bodymod");
+		if(!(isShip || isSuit || isBodymod || isOutfit) || child.Size() < 2)
 			continue;
 		
 		// Figure out which record we're modifying.
 		map<int, int> &entry = isShip ?
 			ships[GameData::Ships().Get(child.Token(1))] :
-			outfits[GameData::Outfits().Get(child.Token(1))];
+		   	isSuit ?
+		  		suits[GameData::Suits().Get(child.Token(1))] :
+				isBodymod ?
+					bodymods[GameData::Bodymods().Get(child.Token(1))] :
+					outfits[GameData::Outfits().Get(child.Token(1))];
 		
 		// Load any depreciation records for this item.
 		for(const DataNode &grand : child)
@@ -92,9 +101,35 @@ void Depreciation::Save(DataWriter &out, int day) const
 			}
 			out.EndChild();
 		}
+		for(const auto &sit : suits)
+		{
+			out.Write("suit", sit.first->ModelName());
+			out.BeginChild();
+			{
+				// If this is a planet's stock, remember how many bodymods in
+				// stock are fully depreciated. If it's the player's stock,
+				// anything not recorded is considered fully depreciated, so
+				// there is no reason to save records for those items.
+				for(const auto &it : sit.second)
+					if(isStock || (it.second && it.first > day - MAX_AGE))
+						out.Write(it.first, it.second);
+			}
+			out.EndChild();
+		}
 		for(const auto &oit : outfits)
 		{
 			out.Write("outfit", oit.first->Name());
+			out.BeginChild();
+			{
+				for(const auto &it : oit.second)
+					if(isStock || (it.second && it.first > day - MAX_AGE))
+						out.Write(it.first, it.second);
+			}
+			out.EndChild();
+		}
+		for(const auto &oit : bodymods)
+		{
+			out.Write("bodymod", oit.first->Name());
 			out.BeginChild();
 			{
 				for(const auto &it : oit.second)
@@ -118,7 +153,7 @@ bool Depreciation::IsLoaded() const
 
 
 // If no records have been loaded, initialize with an entire fleet.
-void Depreciation::Init(const vector<shared_ptr<Ship>> &fleet, int day)
+void Depreciation::Init(const vector<shared_ptr<Ship>> &fleet, const vector<shared_ptr<Suit>> &army, int day)
 {
 	// If this is called, this is a player's fleet, not a planet's stock.
 	isStock = false;
@@ -130,6 +165,16 @@ void Depreciation::Init(const vector<shared_ptr<Ship>> &fleet, int day)
 		
 		for(const auto &it : ship->Outfits())
 			outfits[it.first][day] += it.second;
+
+	}
+
+	for(const shared_ptr<Suit> &suit : army)
+	{
+		const Suit *base = GameData::Suits().Get(suit->ModelName());
+		++suits[base][day];
+
+		for(const auto &it : suit->Bodymods())
+			bodymods[it.first][day] += it.second;
 	}
 }
 
@@ -167,6 +212,39 @@ void Depreciation::Buy(const Ship &ship, int day, Depreciation *source)
 	++ships[base][day];
 }
 
+// Add a suit, and all its bodymods, to the depreciation record.
+void Depreciation::Buy(const Suit &suit, int day, Depreciation *source)
+{
+	// First, add records for all bodymods the suit is carrying.
+	for(const auto &it : suit.Bodymods())
+		for(int i = 0; i < it.second; ++i)
+			Buy(it.first, day, source);
+
+	// Then, check the base day for the suit chassis itself.
+	const Suit *base = GameData::Suits().Get(suit.ModelName());
+	if(source)
+	{
+		// Check if the source has any instances of this suit.
+		auto it = source->suits.find(base);
+		if(it != source->suits.end() && !it->second.empty())
+		{
+			day = source->Sell(it->second);
+			if(it->second.empty())
+				source->suits.erase(it);
+		}
+		else if(isStock)
+		{
+			// If we're a planet buying from the player, and the player has no
+			// record of how old this suit is, it's fully depreciated.
+			day -= MAX_AGE;
+		}
+	}
+
+	// Increment our count for this suit on this day.
+	++suits[base][day];
+}
+
+
 
 
 // Add a single outfit to the depreciation record.
@@ -197,6 +275,35 @@ void Depreciation::Buy(const Outfit *outfit, int day, Depreciation *source)
 	++outfits[outfit][day];
 }
 
+// Add a single outfit to the depreciation record.
+void Depreciation::Buy(const Bodymod *bodymod, int day, Depreciation *source)
+{
+	if(bodymod->Get("installable") < 0.)
+		return;
+
+	if(source)
+	{
+		// Check if the source has any instances of this bodymod.
+		auto it = source->bodymods.find(bodymod);
+		if(it != source->bodymods.end() && !it->second.empty())
+		{
+			day = source->Sell(it->second);
+			if(it->second.empty())
+				source->bodymods.erase(it);
+		}
+		else if(isStock)
+		{
+			// If we're a planet buying from the player, and the player has no
+			// record of how old this bodymod is, it's fully depreciated.
+			day -= MAX_AGE;
+		}
+	}
+
+	// Increment our count for this bodymod on this day.
+	++bodymods[bodymod][day];
+}
+
+
 
 
 // Get the value of an entire fleet.
@@ -222,6 +329,29 @@ int64_t Depreciation::Value(const vector<shared_ptr<Ship>> &fleet, int day) cons
 	return value;
 }
 
+// Get the value of an entire army.
+int64_t Depreciation::Value(const vector<shared_ptr<Suit>> &army, int day) const
+{
+	map<const Suit *, int> suitCount;
+	map<const Bodymod *, int> bodymodCount;
+
+	for(const shared_ptr<Suit> &suit : army)
+	{
+		const Suit *base = GameData::Suits().Get(suit->ModelName());
+		++suitCount[base];
+
+		for(const auto &it : suit->Bodymods())
+			bodymodCount[it.first] += it.second;
+	}
+
+	int64_t value = 0;
+	for(const auto &it : suitCount)
+		value += Value(it.first, day, it.second);
+	for(const auto &it : bodymodCount)
+		value += Value(it.first, day, it.second);
+	return value;
+}
+
 
 
 // Get the value of a ship, along with all its outfits.
@@ -229,6 +359,15 @@ int64_t Depreciation::Value(const Ship &ship, int day) const
 {
 	int64_t value = Value(&ship, day);
 	for(const auto &it : ship.Outfits())
+		value += Value(it.first, day, it.second);
+	return value;
+}
+
+// Get the value of a suit, along with all its bodymods.
+int64_t Depreciation::Value(const Suit &suit, int day) const
+{
+	int64_t value = Value(&suit, day);
+	for(const auto &it : suit.Bodymods())
 		value += Value(it.first, day, it.second);
 	return value;
 }
@@ -248,6 +387,19 @@ int64_t Depreciation::Value(const Ship *ship, int day, int count) const
 	return Depreciate(recordIt->second, day, count) * ship->ChassisCost();
 }
 
+// Get the value just of the chassis of a suit.
+int64_t Depreciation::Value(const Suit *suit, int day, int count) const
+{
+	// Check whether a record exists for this suit. If not, its value is full
+	// if this is  planet's stock, or fully depreciated if this is the player.
+	suit = GameData::Suits().Get(suit->ModelName());
+	auto recordIt = suits.find(suit);
+	if(recordIt == suits.end() || recordIt->second.empty())
+		return DefaultDepreciation() * count * suit->ChassisCost();
+
+	return Depreciate(recordIt->second, day, count) * suit->ChassisCost();
+}
+
 
 
 // Get the value of an outfit.
@@ -265,6 +417,22 @@ int64_t Depreciation::Value(const Outfit *outfit, int day, int count) const
 	return Depreciate(recordIt->second, day, count) * outfit->Cost();
 }
 
+
+
+// Get the value of an bodymod.
+int64_t Depreciation::Value(const Bodymod *bodymod, int day, int count) const
+{
+	if(bodymod->Get("installable") < 0.)
+		return count * bodymod->Cost();
+
+	// Check whether a record exists for this bodymod. If not, its value is full
+	// if this is  planet's stock, or fully depreciated if this is the player.
+	auto recordIt = bodymods.find(bodymod);
+	if(recordIt == bodymods.end() || recordIt->second.empty())
+		return DefaultDepreciation() * count * bodymod->Cost();
+
+	return Depreciate(recordIt->second, day, count) * bodymod->Cost();
+}
 
 
 // "Sell" an item, removing it from the given record and returning the base

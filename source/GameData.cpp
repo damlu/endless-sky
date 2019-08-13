@@ -37,6 +37,7 @@ PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 #include "Music.h"
 #include "News.h"
 #include "Outfit.h"
+#include "Bodymod.h"
 #include "OutlineShader.h"
 #include "Person.h"
 #include "Phrase.h"
@@ -46,6 +47,7 @@ PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 #include "Random.h"
 #include "RingShader.h"
 #include "Ship.h"
+#include "Suit.h"
 #include "Sprite.h"
 #include "SpriteQueue.h"
 #include "SpriteSet.h"
@@ -76,14 +78,18 @@ namespace {
 	Set<Minable> minables;
 	Set<Mission> missions;
 	Set<Outfit> outfits;
+	Set<Bodymod> bodymods;
 	Set<Person> persons;
 	Set<Phrase> phrases;
 	Set<Planet> planets;
 	Set<Ship> ships;
+	Set<Suit> suits;
 	Set<System> systems;
 	
 	Set<Sale<Ship>> shipSales;
+	Set<Sale<Suit>> suitSales;
 	Set<Sale<Outfit>> outfitSales;
+	Set<Sale<Bodymod>> bodymodSales;
 	
 	Set<Fleet> defaultFleets;
 	Set<Government> defaultGovernments;
@@ -91,7 +97,9 @@ namespace {
 	Set<System> defaultSystems;
 	Set<Galaxy> defaultGalaxies;
 	Set<Sale<Ship>> defaultShipSales;
+	Set<Sale<Suit>> defaultSuitSales;
 	Set<Sale<Outfit>> defaultOutfitSales;
+	Set<Sale<Bodymod>> defaultBodymodSales;
 	
 	Politics politics;
 	StartConditions startConditions;
@@ -125,6 +133,7 @@ namespace {
 bool GameData::BeginLoad(const char * const *argv)
 {
 	bool printShips = false;
+	bool printSuits = false;
 	bool printWeapons = false;
 	bool debugMode = false;
 	for(const char * const *it = argv + 1; *it; ++it)
@@ -134,6 +143,8 @@ bool GameData::BeginLoad(const char * const *argv)
 			string arg = *it;
 			if(arg == "-s" || arg == "--ships")
 				printShips = true;
+			if(arg == "-st" || arg == "--suits")
+				printSuits = true;
 			if(arg == "-w" || arg == "--weapons")
 				printWeapons = true;
 			if(arg == "-d" || arg == "--debug")
@@ -185,6 +196,8 @@ bool GameData::BeginLoad(const char * const *argv)
 	// And, update the ships with the outfits we've now finished loading.
 	for(auto &it : ships)
 		it.second.FinishLoading(true);
+	for(auto &it : suits)
+		it.second.FinishLoading(true);
 	for(auto &it : persons)
 		it.second.FinishLoading();
 	startConditions.FinishLoading();
@@ -196,16 +209,20 @@ bool GameData::BeginLoad(const char * const *argv)
 	defaultSystems = systems;
 	defaultGalaxies = galaxies;
 	defaultShipSales = shipSales;
+	defaultSuitSales = suitSales;
 	defaultOutfitSales = outfitSales;
+	defaultBodymodSales = bodymodSales;
 	playerGovernment = governments.Get("Escort");
 	
 	politics.Reset();
 	
 	if(printShips)
 		PrintShipTable();
+	if(printSuits)
+		PrintSuitTable();
 	if(printWeapons)
 		PrintWeaponTable();
-	return !(printShips || printWeapons);
+	return !(printShips || printSuits || printWeapons);
 }
 
 
@@ -220,9 +237,11 @@ void GameData::CheckReferences()
 		"galaxy",
 		"government",
 		"outfitter",
+		"bodymodter",
 		"news",
 		"planet",
 		"shipyard",
+		"suityard",
 		"system"
 	};
 	for(const auto &it : events)
@@ -262,9 +281,15 @@ void GameData::CheckReferences()
 	for(const auto &it : outfits)
 		if(it.second.Name().empty())
 			Files::LogError("Warning: outfit \"" + it.first + "\" is referred to, but never defined.");
+	for(const auto &it : bodymods)
+		if(it.second.Name().empty())
+			Files::LogError("Warning: bodymod \"" + it.first + "\" is referred to, but never defined.");
 	for(const auto &it : outfitSales)
 		if(it.second.empty() && !deferred["outfitter"].count(it.first))
 			Files::LogError("Warning: outfitter \"" + it.first + "\" is referred to, but has no outfits.");
+	for(const auto &it : bodymodSales)
+		if(it.second.empty() && !deferred["bodymodter"].count(it.first))
+			Files::LogError("Warning: bodymodter \"" + it.first + "\" is referred to, but has no bodymods.");
 	for(const auto &it : phrases)
 		if(it.second.Name().empty())
 			Files::LogError("Warning: phrase \"" + it.first + "\" is referred to, but never defined.");
@@ -274,9 +299,15 @@ void GameData::CheckReferences()
 	for(const auto &it : ships)
 		if(it.second.ModelName().empty())
 			Files::LogError("Warning: ship \"" + it.first + "\" is referred to, but never defined.");
+	for(const auto &it : suits)
+		if(it.second.ModelName().empty())
+			Files::LogError("Warning: suit \"" + it.first + "\" is referred to, but never defined.");
 	for(const auto &it : shipSales)
 		if(it.second.empty() && !deferred["shipyard"].count(it.first))
 			Files::LogError("Warning: shipyard \"" + it.first + "\" is referred to, but has no ships.");
+	for(const auto &it : suitSales)
+		if(it.second.empty() && !deferred["suityard"].count(it.first))
+			Files::LogError("Warning: suityard \"" + it.first + "\" is referred to, but has no suits.");
 	for(const auto &it : systems)
 		if(it.second.Name().empty() && !deferred["system"].count(it.first))
 			Files::LogError("Warning: system \"" + it.first + "\" is referred to, but never defined.");
@@ -385,7 +416,9 @@ void GameData::Revert()
 	systems.Revert(defaultSystems);
 	galaxies.Revert(defaultGalaxies);
 	shipSales.Revert(defaultShipSales);
+	suitSales.Revert(defaultSuitSales);
 	outfitSales.Revert(defaultOutfitSales);
+	bodymodSales.Revert(defaultBodymodSales);
 	for(auto &it : persons)
 		it.second.Restore();
 	
@@ -531,10 +564,14 @@ void GameData::Change(const DataNode &node)
 		governments.Get(node.Token(1))->Load(node);
 	else if(node.Token(0) == "outfitter" && node.Size() >= 2)
 		outfitSales.Get(node.Token(1))->Load(node, outfits);
+	else if(node.Token(0) == "bodymodter" && node.Size() >= 2)
+		bodymodSales.Get(node.Token(1))->Load(node, bodymods);
 	else if(node.Token(0) == "planet" && node.Size() >= 2)
 		planets.Get(node.Token(1))->Load(node);
 	else if(node.Token(0) == "shipyard" && node.Size() >= 2)
 		shipSales.Get(node.Token(1))->Load(node, ships);
+	else if(node.Token(0) == "suityard" && node.Size() >= 2)
+		suitSales.Get(node.Token(1))->Load(node, suits);
 	else if(node.Token(0) == "system" && node.Size() >= 2)
 		systems.Get(node.Token(1))->Load(node, planets);
 	else if(node.Token(0) == "news" && node.Size() >= 2)
@@ -656,6 +693,11 @@ const Set<Outfit> &GameData::Outfits()
 }
 
 
+const Set<Bodymod> &GameData::Bodymods()
+{
+	return bodymods;
+}
+
 
 const Set<Sale<Outfit>> &GameData::Outfitters()
 {
@@ -690,12 +732,23 @@ const Set<Ship> &GameData::Ships()
 	return ships;
 }
 
+const Set<Suit> &GameData::Suits()
+{
+	return suits;
+}
+
 
 
 const Set<Sale<Ship>> &GameData::Shipyards()
 {
 	return shipSales;
 }
+
+const Set<Sale<Suit>> &GameData::Suityards()
+{
+	return suitSales;
+}
+
 
 
 
@@ -941,8 +994,12 @@ void GameData::LoadFile(const string &path, bool debugMode)
 			missions.Get(node.Token(1))->Load(node);
 		else if(key == "outfit" && node.Size() >= 2)
 			outfits.Get(node.Token(1))->Load(node);
+		else if(key == "bodymod" && node.Size() >= 2)
+			bodymods.Get(node.Token(1))->Load(node);
 		else if(key == "outfitter" && node.Size() >= 2)
 			outfitSales.Get(node.Token(1))->Load(node, outfits);
+		else if(key == "bodymodter" && node.Size() >= 2)
+			bodymodSales.Get(node.Token(1))->Load(node, bodymods);
 		else if(key == "person" && node.Size() >= 2)
 			persons.Get(node.Token(1))->Load(node);
 		else if(key == "phrase" && node.Size() >= 2)
@@ -955,8 +1012,16 @@ void GameData::LoadFile(const string &path, bool debugMode)
 			const string &name = node.Token((node.Size() > 2) ? 2 : 1);
 			ships.Get(name)->Load(node);
 		}
+		else if(key == "suit" && node.Size() >= 2)
+		{
+			// Allow multiple named variants of the same suit model.
+			const string &name = node.Token((node.Size() > 2) ? 2 : 1);
+			suits.Get(name)->Load(node);
+		}
 		else if(key == "shipyard" && node.Size() >= 2)
 			shipSales.Get(node.Token(1))->Load(node, ships);
+		else if(key == "suityard" && node.Size() >= 2)
+			suitSales.Get(node.Token(1))->Load(node, suits);
 		else if(key == "start")
 			startConditions.Load(node);
 		else if(key == "system" && node.Size() >= 2)
@@ -1089,6 +1154,22 @@ void GameData::PrintShipTable()
 		// Maximum heat is 100 degrees per ton. Bleed off rate is 1/1000
 		// per 60th of a second, so:
 		cout << 60. * ship.HeatDissipation() * ship.MaximumHeat() << '\n';
+	}
+	cout.flush();
+}
+
+void GameData::PrintSuitTable()
+{
+	cout << "model" << '\t' << "cost"  << '\n';
+	for(auto &it : suits)
+	{
+		// Skip variants.
+		if(it.second.ModelName() != it.first)
+			continue;
+
+		const Suit &suit = it.second;
+		cout << it.first << '\t';
+		cout << suit.Cost() << '\t';
 	}
 	cout.flush();
 }
