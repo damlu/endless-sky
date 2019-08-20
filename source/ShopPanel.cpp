@@ -27,6 +27,7 @@ PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 #include "Sale.h"
 #include "Screen.h"
 #include "Ship.h"
+#include "Suit.h"
 #include "Sprite.h"
 #include "SpriteSet.h"
 #include "SpriteShader.h"
@@ -48,14 +49,22 @@ namespace {
 
 
 
-ShopPanel::ShopPanel(PlayerInfo &player, bool isOutfitter)
+ShopPanel::ShopPanel(PlayerInfo &player, string type)
 	: player(player), day(player.GetDate().DaysSinceEpoch()),
 	planet(player.GetPlanet()), playerShip(player.Flagship()),
-	categories(isOutfitter ? Outfit::CATEGORIES : Ship::CATEGORIES),
-	collapsed(player.Collapsed(isOutfitter ? "outfitter" : "shipyard"))
+	playerSuit(player.Flagsuit()),
+	categories(
+		type == "outfitter" ? Outfit::CATEGORIES
+		: type == "outfitter" ? Ship::CATEGORIES
+		: type == "bodymodder" ? Bodymod::CATEGORIES
+		: Suit::CATEGORIES
+	),
+	collapsed(player.Collapsed(type))
 {
 	if(playerShip)
 		playerShips.insert(playerShip);
+	if(playerSuit)
+		playerSuits.insert(playerSuit);
 	SetIsFullScreen(true);
 	SetInterruptible(false);
 }
@@ -104,6 +113,7 @@ void ShopPanel::Draw()
 	DrawKey();
 	
 	shipInfo.DrawTooltips();
+	suitInfo.DrawTooltips();
 	outfitInfo.DrawTooltips();
 	
 	if(!warningType.empty())
@@ -133,6 +143,16 @@ void ShopPanel::Draw()
 		Point size(sprite->Width() * scale, sprite->Height() * scale);
 		OutlineShader::Draw(sprite, dragPoint, size, selected);
 	}
+
+	if(dragSuit && dragSuit->GetSprite())
+	{
+		static const Color selected(.8f, 1.f);
+		const Sprite *sprite = dragSuit->GetSprite();
+		float scale = ICON_SIZE / max(sprite->Width(), sprite->Height());
+		Point size(sprite->Width() * scale, sprite->Height() * scale);
+		OutlineShader::Draw(sprite, dragPoint, size, selected);
+	}
+
 
 	if(sameSelectedTopY)
 	{
@@ -183,6 +203,18 @@ void ShopPanel::DrawSidebar()
 		shipsHere += !(ship->GetSystem() != player.GetSystem() || ship->IsDisabled());
 	if(shipsHere < 4)
 		point.X() += .5 * ICON_TILE * (4 - shipsHere);
+
+//	// Draw this string, centered in the side panel:
+//	static const string YOURSUITS = "Your Suits:";
+//	Point yoursPoint(
+//			Screen::Right() - SIDE_WIDTH / 2 - font.Width(YOURSUITS) / 2,
+//			Screen::Top() + 10 - sideScroll);
+//	font.Draw(YOURSUITS, yoursPoint, bright);
+//
+//	// Start below the "Your Suits" label, and draw them.
+//	Point point(
+//			Screen::Right() - SIDE_WIDTH / 2 - 93,
+//			Screen::Top() + SIDE_WIDTH / 2 - sideScroll + 40 - 93);
 	
 	// Check whether flight check tooltips should be shown.
 	Point mouse = GetUI()->GetMouse();
@@ -235,6 +267,37 @@ void ShopPanel::DrawSidebar()
 		point.X() += ICON_TILE;
 	}
 	point.Y() += ICON_TILE;
+
+	for(const shared_ptr<Suit> &suit : player.Suits())
+	{
+
+		if(point.X() > Screen::Right())
+		{
+			point.X() -= ICON_TILE * ICON_COLS;
+			point.Y() += ICON_TILE;
+		}
+
+		bool isSelected = playerSuits.count(suit.get());
+		const Sprite *background = SpriteSet::Get(isSelected ? "ui/icon selected" : "ui/icon unselected");
+		SpriteShader::Draw(background, point);
+		// If this is one of the selected suits, check if the currently hovered
+		// button (if any) applies to it. If so, brighten the background.
+		if(isSelected && ShouldHighlight(suit.get()))
+			SpriteShader::Draw(background, point);
+
+		const Sprite *sprite = suit->GetSprite();
+		if(sprite)
+		{
+			float scale = ICON_SIZE / max(sprite->Width(), sprite->Height());
+			Point size(sprite->Width() * scale, sprite->Height() * scale);
+			OutlineShader::Draw(sprite, point, size, isSelected ? selected : unselected);
+		}
+
+		zones.emplace_back(point, Point(ICON_TILE, ICON_TILE), suit.get());
+
+		point.X() += ICON_TILE;
+	}
+	point.Y() += ICON_TILE;
 	
 	if(playerShip)
 	{
@@ -256,6 +319,18 @@ void ShopPanel::DrawSidebar()
 		font.Draw(space, right, bright);
 		point.Y() += 20.;
 	}
+
+	if(playerSuit)
+	{
+		point.Y() += SUIT_SIZE / 2;
+		point.X() = Screen::Right() - SIDE_WIDTH / 2;
+		DrawSuit(*playerSuit, point, true);
+
+		Point offset(SIDE_WIDTH / -2, SUIT_SIZE / 2);
+		sideDetailHeight = DrawPlayerSuitInfo(point + offset);
+		point.Y() += sideDetailHeight + SUIT_SIZE / 2;
+	}
+
 	maxSideScroll = max(0., point.Y() + sideScroll - Screen::Bottom() + BUTTON_HEIGHT);
 	
 	PointerShader::Draw(Point(Screen::Right() - 10, Screen::Top() + 10),
@@ -484,6 +559,32 @@ void ShopPanel::DrawShip(const Ship &ship, const Point &center, bool isSelected)
 	}
 }
 
+void ShopPanel::DrawSuit(const Suit &suit, const Point &center, bool isSelected)
+{
+	const Sprite *back = SpriteSet::Get(
+			isSelected ? "ui/suityard selected" : "ui/suityard unselected");
+	SpriteShader::Draw(back, center);
+
+	// Draw the suit name.
+	const Font &font = FontSet::Get(14);
+	const string &name = suit.Name().empty() ? suit.ModelName() : font.TruncateMiddle(suit.Name(), SIDE_WIDTH - 61);
+	Point offset(-.5f * font.Width(name), -.5f * SUIT_SIZE + 10.f);
+	font.Draw(name, center + offset, *GameData::Colors().Get("bright"));
+
+	const Sprite *thumbnail = suit.Thumbnail();
+	const Sprite *sprite = suit.GetSprite();
+	int swizzle = suit.CustomSwizzle() >= 0 ? suit.CustomSwizzle() : GameData::PlayerGovernment()->GetSwizzle();
+	if(thumbnail)
+		SpriteShader::Draw(thumbnail, center + Point(0., 10.), 1., swizzle);
+	else if(sprite)
+	{
+		// Make sure the suit sprite leaves 10 pixels padding all around.
+		const float zoomSize = SUIT_SIZE - 60.f;
+		float zoom = min(1.f, zoomSize / max(sprite->Width(), sprite->Height()));
+		SpriteShader::Draw(sprite, center, zoom, swizzle);
+	}
+}
+
 
 
 void ShopPanel::FailSell(bool toCargo) const
@@ -502,6 +603,12 @@ bool ShopPanel::CanSellMultiple() const
 bool ShopPanel::ShouldHighlight(const Ship *ship)
 {
 	return (hoverButton == 's');
+}
+
+
+bool ShopPanel::ShouldHighlight(const Suit *suit)
+{
+	return (hoverButton == 't');
 }
 
 
@@ -646,6 +753,7 @@ bool ShopPanel::KeyDown(SDL_Keycode key, Uint16 mod, const Command &command, boo
 bool ShopPanel::Click(int x, int y, int clicks)
 {
 	dragShip = nullptr;
+	dragSuit = nullptr;
 	// Handle clicks on the buttons.
 	char button = CheckButton(x, y);
 	if(button)
@@ -831,6 +939,29 @@ int64_t ShopPanel::LicenseCost(const Outfit *outfit) const
 	return cost;
 }
 
+int64_t ShopPanel::LicenseCost(const Bodymod *bodymod) const
+{
+	return 0;
+//	// Don't require a license for an bodymod that you have in cargo or that you
+//	// just sold to the bodymodter. (Otherwise, there would be no way to transfer
+//	// a restricted plundered bodymod between ships or from cargo to a ship.)
+//	if(player.Cargo().Get(bodymod) || player.Stock(bodymod) > 0)
+//		return 0;
+//
+//	const Sale<Bodymod> &available = player.GetPlanet()->Bodymodter();
+//
+//	int64_t cost = 0;
+//	for(const string &name : bodymod->Licenses())
+//		if(!player.GetCondition("license: " + name))
+//		{
+//			const Bodymod *license = GameData::Bodymods().Find(name + " License");
+//			if(!license || !license->Cost() || !available.Has(license))
+//				return -1;
+//			cost += license->Cost();
+//		}
+//	return cost;
+}
+
 
 
 ShopPanel::Zone::Zone(Point center, Point size, const Ship *ship, double scrollY)
@@ -838,10 +969,21 @@ ShopPanel::Zone::Zone(Point center, Point size, const Ship *ship, double scrollY
 {
 }
 
+ShopPanel::Zone::Zone(Point center, Point size, const Suit *suit, double scrollY)
+	: ClickZone(center, size, nullptr), scrollY(scrollY), suit(suit)
+{
+}
 
 
 ShopPanel::Zone::Zone(Point center, Point size, const Outfit *outfit, double scrollY)
 	: ClickZone(center, size, nullptr), scrollY(scrollY), outfit(outfit)
+{
+}
+
+
+
+ShopPanel::Zone::Zone(Point center, Point size, const Bodymod *bodymod, double scrollY)
+		: ClickZone(center, size, nullptr), scrollY(scrollY), bodymod(bodymod)
 {
 }
 
@@ -857,6 +999,19 @@ const Ship *ShopPanel::Zone::GetShip() const
 const Outfit *ShopPanel::Zone::GetOutfit() const
 {
 	return outfit;
+}
+
+
+const Suit *ShopPanel::Zone::GetSuit() const
+{
+	return suit;
+}
+
+
+
+const Bodymod *ShopPanel::Zone::GetBodymod() const
+{
+	return bodymod;
 }
 
 
@@ -963,6 +1118,40 @@ void ShopPanel::SideSelect(Ship *ship)
 	
 	playerShip = ship;
 	playerShips.insert(playerShip);
+	sameSelectedTopY = true;
+}
+
+void ShopPanel::SideSelect(Suit *suit)
+{
+	return;
+	bool shift = (SDL_GetModState() & KMOD_SHIFT);
+	bool control = (SDL_GetModState() & (KMOD_CTRL | KMOD_GUI));
+
+	if(shift)
+	{
+		bool on = false;
+		const System *here = player.GetSystem();
+		for(const shared_ptr<Suit> &other : player.Suits())
+		{
+
+			if(other.get() == suit || other.get() == playerSuit)
+				on = !on;
+			else if(on)
+				playerSuits.insert(other.get());
+		}
+	}
+	else if(!control)
+		playerSuits.clear();
+	else if(playerSuits.count(suit))
+	{
+		playerSuits.erase(suit);
+		if(playerSuit == suit)
+			playerSuit = playerSuits.empty() ? nullptr : *playerSuits.begin();
+		return;
+	}
+
+	playerSuit = suit;
+	playerSuits.insert(playerSuit);
 	sameSelectedTopY = true;
 }
 

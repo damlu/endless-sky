@@ -31,9 +31,11 @@ PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
 class Government;
 class Outfit;
+class Bodymod;
 class Planet;
 class Rectangle;
 class Ship;
+class Suit;
 class ShipEvent;
 class StellarObject;
 class System;
@@ -112,19 +114,39 @@ public:
 	const Ship *Flagship() const;
 	Ship *Flagship();
 	const std::shared_ptr<Ship> &FlagshipPtr();
+
+	// Access the flagsuit (the first suit in the list). This returns null if
+	// the player does not have any suits.
+	const Suit *Flagsuit() const;
+	Suit *Flagsuit();
+	const std::shared_ptr<Suit> &FlagsuitPtr();
 	// Get the full list of ships the player owns.
 	const std::vector<std::shared_ptr<Ship>> &Ships() const;
+	// Get the full list of suits the player owns.
+	const std::vector<std::shared_ptr<Suit>> &Suits() const;
 	// Add a captured ship to your fleet.
 	void AddShip(const std::shared_ptr<Ship> &ship);
+	// Add a captured suit to your army.
+	void AddSuit(const std::shared_ptr<Suit> &suit);
 	// Buy or sell a ship.
 	void BuyShip(const Ship *model, const std::string &name);
 	void SellShip(const Ship *selected);
 	void DisownShip(const Ship *selected);
+
+	// Buy or sell a suit.
+	void BuySuit(const Suit *model, const std::string &name);
+	void SellSuit(const Suit *selected);
+	void DisownSuit(const Suit *selected);
 	void ParkShip(const Ship *selected, bool isParked);
 	void RenameShip(const Ship *selected, const std::string &name);
 	// Change the order of the given ship in the list.
 	void ReorderShip(int fromIndex, int toIndex);
 	int ReorderShips(const std::set<int> &fromIndices, int toIndex);
+
+	void RenameSuit(const Suit *selected, const std::string &name);
+	// Change the order of the given suit in the list.
+	void ReorderSuit(int fromIndex, int toIndex);
+	int ReorderSuits(const std::set<int> &fromIndices, int toIndex);
 	// Get the attraction factors of the player's fleet to raid fleets.
 	std::pair<double, double> RaidFleetFactors() const;
 	
@@ -222,10 +244,18 @@ public:
 	// available to buy back until you take off.
 	int Stock(const Outfit *outfit) const;
 	void AddStock(const Outfit *outfit, int count);
+
+	// Keep track of any outfits that you have sold since landing. These will be
+	// available to buy back until you take off.
+	int ModStock(const Bodymod *bodymod) const;
+	void AddModStock(const Bodymod *bodymod, int count);
 	// Get depreciation information.
 	const Depreciation &FleetDepreciation() const;
 	const Depreciation &StockDepreciation() const;
-	
+
+	const Depreciation &ArmyDepreciation() const;
+	const Depreciation &ModStockDepreciation() const;
+
 	// Keep track of what materials you have mined in each system.
 	void Harvest(const Outfit *type);
 	const std::set<std::pair<const System *, const Outfit *>> &Harvested() const;
@@ -282,6 +312,8 @@ private:
 	
 	std::shared_ptr<Ship> flagship;
 	std::vector<std::shared_ptr<Ship>> ships;
+	std::shared_ptr<Suit> flagsuit;
+	std::vector<std::shared_ptr<Suit>> suits;
 	std::vector<std::weak_ptr<Ship>> selectedShips;
 	std::map<const Ship *, int> groups;
 	CargoHold cargo;
@@ -315,8 +347,11 @@ private:
 	const Outfit *selectedWeapon = nullptr;
 	
 	std::map<const Outfit *, int> stock;
+	std::map<const Bodymod *, int> modStock;
 	Depreciation depreciation;
 	Depreciation stockDepreciation;
+	Depreciation armyDepreciation;
+	Depreciation modStockDepreciation;
 	std::set<std::pair<const System *, const Outfit *>> harvested;
 	
 	// Changes that this PlayerInfo wants to make to the global galaxy state:

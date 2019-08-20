@@ -25,7 +25,9 @@ PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 #include "Preferences.h"
 #include "Rectangle.h"
 #include "Ship.h"
+#include "Suit.h"
 #include "ShipInfoPanel.h"
+#include "SuitInfoPanel.h"
 #include "System.h"
 #include "Table.h"
 #include "UI.h"
@@ -187,6 +189,14 @@ bool PlayerInfoPanel::KeyDown(SDL_Keycode key, Uint16 mod, const Command &comman
 		{
 			GetUI()->Pop(this);
 			GetUI()->Push(new ShipInfoPanel(player, selectedIndex));
+		}
+	}
+	else if(key == 't')
+	{
+		if(!player.Suits().empty())
+		{
+			GetUI()->Pop(this);
+			GetUI()->Push(new SuitInfoPanel(player, selectedIndex));
 		}
 	}
 	else if(key == SDLK_PAGEUP || key == SDLK_PAGEDOWN)
@@ -569,6 +579,7 @@ void PlayerInfoPanel::DrawFleet(const Rectangle &bounds)
 	table.DrawUnderline(dim);
 	table.SetColor(bright);
 	table.Draw("ship");
+	table.Draw("suit");
 	table.Draw("model");
 	table.Draw("system");
 	table.Draw("shields");

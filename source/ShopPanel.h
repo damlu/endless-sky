@@ -19,6 +19,7 @@ PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 #include "OutfitInfoDisplay.h"
 #include "Point.h"
 #include "ShipInfoDisplay.h"
+#include "SuitInfoDisplay.h"
 
 #include <map>
 #include <set>
@@ -26,17 +27,18 @@ PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 #include <vector>
 
 class Outfit;
+class Bodymod;
 class Planet;
 class PlayerInfo;
 class Ship;
-
+class Suit;
 
 
 // Class representing the common elements of both the shipyard panel and the
 // outfitter panel (e.g. the sidebar with the ships you own).
 class ShopPanel : public Panel {
 public:
-	ShopPanel(PlayerInfo &player, bool isOutfitter);
+	ShopPanel(PlayerInfo &player, std::string type);
 	
 	virtual void Step() override;
 	virtual void Draw() override;
@@ -47,10 +49,12 @@ protected:
 	void DrawMain();
 	
 	void DrawShip(const Ship &ship, const Point &center, bool isSelected);
+	void DrawSuit(const Suit &suit, const Point &center, bool isSelected);
 	
 	// These are for the individual shop panels to override.
 	virtual int TileSize() const = 0;
 	virtual int DrawPlayerShipInfo(const Point &point) = 0;
+	virtual int DrawPlayerSuitInfo(const Point &point) = 0;
 	virtual bool HasItem(const std::string &name) const = 0;
 	virtual void DrawItem(const std::string &name, const Point &point, int scrollY) = 0;
 	virtual int DividerOffset() const = 0;
@@ -64,6 +68,7 @@ protected:
 	virtual void FailSell(bool toCargo = false) const;
 	virtual bool CanSellMultiple() const;
 	virtual bool ShouldHighlight(const Ship *ship);
+	virtual bool ShouldHighlight(const Suit *suit);
 	virtual void DrawKey();
 	virtual void ToggleForSale();
 	virtual void ToggleCargo();
@@ -77,6 +82,7 @@ protected:
 	virtual bool Scroll(double dx, double dy) override;
 	
 	int64_t LicenseCost(const Outfit *outfit) const;
+	int64_t LicenseCost(const Bodymod *bodymod) const;
 	
 	
 protected:
@@ -84,23 +90,32 @@ protected:
 	public:
 		Zone(Point center, Point size, const Ship *ship, double scrollY = 0.);
 		Zone(Point center, Point size, const Outfit *outfit, double scrollY = 0.);
-		
+		Zone(Point center, Point size, const Suit *suit, double scrollY = 0.);
+		Zone(Point center, Point size, const Bodymod *bodymod, double scrollY = 0.);
+
+
 		const Ship *GetShip() const;
 		const Outfit *GetOutfit() const;
+		const Suit *GetSuit() const;
+		const Bodymod *GetBodymod() const;
 		
 		double ScrollY() const;
 		
 	private:
 		double scrollY = 0.;
+		const Suit *suit = nullptr;
 		const Outfit *outfit = nullptr;
-	};
-	
+		const Bodymod *bodymod = nullptr;
+};
+
 	
 protected:
 	static const int SIDE_WIDTH = 250;
 	static const int BUTTON_HEIGHT = 70;
 	static const int SHIP_SIZE = 250;
+	static const int SUIT_SIZE = 250;
 	static const int OUTFIT_SIZE = 180;
+	static const int BODYMOD_SIZE = 180;
 	
 	
 protected:
@@ -115,6 +130,12 @@ protected:
 	std::set<Ship *> playerShips;
 	const Ship *selectedShip = nullptr;
 	const Outfit *selectedOutfit = nullptr;
+
+	Suit *playerSuit = nullptr;
+	Suit *dragSuit = nullptr;
+	std::set<Suit *> playerSuits;
+	const Suit *selectedSuit = nullptr;
+	const Bodymod *selectedBodymod = nullptr;
 	
 	double mainScroll = 0.;
 	double sideScroll = 0.;
@@ -136,7 +157,9 @@ protected:
 	std::set<std::string> &collapsed;
 	
 	ShipInfoDisplay shipInfo;
+	SuitInfoDisplay suitInfo;
 	OutfitInfoDisplay outfitInfo;
+//	BodymodInfoDisplay bodymodInfo;
 	
 	mutable Point warningPoint;
 	mutable std::string warningType;
@@ -146,6 +169,7 @@ private:
 	bool DoScroll(double dy);
 	void SideSelect(int count);
 	void SideSelect(Ship *ship);
+	void SideSelect(Suit *suit);
 	void MainLeft();
 	void MainRight();
 	void MainUp();

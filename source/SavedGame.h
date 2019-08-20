@@ -43,6 +43,9 @@ public:
 	
 	const Sprite *ShipSprite() const;
 	const std::string &ShipName() const;
+
+	const Sprite *SuitSprite() const;
+	const std::string &SuitName() const;
 	
 	
 private:
@@ -57,6 +60,9 @@ private:
 	
 	const Sprite *shipSprite = nullptr;
 	std::string shipName;
+
+	const Sprite *suitSprite = nullptr;
+	std::string suitName;
 };
 
 

@@ -425,6 +425,10 @@ void LoadPanel::OnCallback(int)
 		gamePanels.Push(new ShipyardPanel(player));
 		gamePanels.StepAll();
 	}
+	if(player.Suits().empty())
+	{
+		throw 10;
+	}
 }
 
 

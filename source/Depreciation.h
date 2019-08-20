@@ -45,7 +45,8 @@ public:
 	// Check if any records have been loaded.
 	bool IsLoaded() const;
 	// If no records have been loaded, initialize with an entire fleet.
-	void Init(const std::vector<std::shared_ptr<Ship>> &fleet, const std::vector<std::shared_ptr<Suit>> &army, int day);
+	void Init(const std::vector<std::shared_ptr<Ship>> &fleet, int day);
+	void Init(const std::vector<std::shared_ptr<Suit>> &army, int day);
 	
 	// Add a ship, and all its outfits, to the depreciation record.
 	void Buy(const Ship &ship, int day, Depreciation *source = nullptr);

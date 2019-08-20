@@ -22,6 +22,7 @@ PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 class DataNode;
 class Planet;
 class Ship;
+class Suit;
 class System;
 
 
@@ -38,6 +39,7 @@ public:
 	const Account &GetAccounts() const;
 	const ConditionSet &GetConditions() const;
 	const std::list<Ship> &Ships() const;
+	const std::list<Suit> &Suits() const;
 	
 	
 private:
@@ -47,6 +49,7 @@ private:
 	Account accounts;
 	ConditionSet conditions;
 	std::list<Ship> ships;
+	std::list<Suit> suits;
 };
 
 

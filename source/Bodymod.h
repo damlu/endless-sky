@@ -71,12 +71,7 @@ public:
 	// Modify this bodymod's attributes. Note that this cannot be used to change
 	// special attributes, like cost and mass.
 	void Set(const char *attribute, double value);
-	
-	// Get this bodymod's engine flare sprites, if any.
-	const std::vector<std::pair<Body, int>> &FlareSprites() const;
-	const std::map<const Sound *, int> &FlareSounds() const;
-	// Get the afterburner effect, if any.
-	const std::map<const Effect *, int> &AfterburnerEffects() const;
+
 	// Get the sprite this bodymod uses when dumped into space.
 	const Sprite *FlotsamSprite() const;
 	
@@ -93,10 +88,7 @@ private:
 	std::vector<std::string> licenses;
 	
 	Dictionary attributes;
-	
-	std::vector<std::pair<Body, int>> flareSprites;
-	std::map<const Sound *, int> flareSounds;
-	std::map<const Effect *, int> afterburnerEffects;
+
 	const Sprite *flotsamSprite = nullptr;
 };
 

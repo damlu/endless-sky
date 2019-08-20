@@ -48,7 +48,7 @@ namespace {
 
 
 BodymodderPanel::BodymodderPanel(PlayerInfo &player)
-	: ShopPanel(player, true)
+	: ShopPanel(player, "bodymodder")
 {
 	for(const pair<const string, Bodymod> &it : GameData::Bodymods())
 		catalog[it.second.Category()].insert(it.first);
@@ -64,8 +64,8 @@ BodymodderPanel::BodymodderPanel(PlayerInfo &player)
 				catalog[bodymod->Category()].insert(name);
 		}
 	
-	if(player.GetPlanet())
-		bodymodder = player.GetPlanet()->Bodymodder();
+//	if(player.GetPlanet())
+//		bodymodder = player.GetPlanet()->Bodymodder();
 }
 
 

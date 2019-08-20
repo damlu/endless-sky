@@ -101,16 +101,16 @@ void Depreciation::Save(DataWriter &out, int day) const
 			}
 			out.EndChild();
 		}
-		for(const auto &sit : suits)
+		for(const auto &stit : suits)
 		{
-			out.Write("suit", sit.first->ModelName());
+			out.Write("suit", stit.first->ModelName());
 			out.BeginChild();
 			{
 				// If this is a planet's stock, remember how many bodymods in
 				// stock are fully depreciated. If it's the player's stock,
 				// anything not recorded is considered fully depreciated, so
 				// there is no reason to save records for those items.
-				for(const auto &it : sit.second)
+				for(const auto &it : stit.second)
 					if(isStock || (it.second && it.first > day - MAX_AGE))
 						out.Write(it.first, it.second);
 			}
@@ -153,7 +153,7 @@ bool Depreciation::IsLoaded() const
 
 
 // If no records have been loaded, initialize with an entire fleet.
-void Depreciation::Init(const vector<shared_ptr<Ship>> &fleet, const vector<shared_ptr<Suit>> &army, int day)
+void Depreciation::Init(const vector<shared_ptr<Ship>> &fleet, int day)
 {
 	// If this is called, this is a player's fleet, not a planet's stock.
 	isStock = false;
@@ -167,6 +167,14 @@ void Depreciation::Init(const vector<shared_ptr<Ship>> &fleet, const vector<shar
 			outfits[it.first][day] += it.second;
 
 	}
+}
+
+// If no records have been loaded, initialize with an entire fleet.
+void Depreciation::Init(const vector<shared_ptr<Suit>> &army, int day)
+{
+	// If this is called, this is a player's fleet, not a planet's stock.
+	isStock = false;
+	// Every ship and outfit in the given fleet starts out with no depreciation.
 
 	for(const shared_ptr<Suit> &suit : army)
 	{
@@ -177,6 +185,7 @@ void Depreciation::Init(const vector<shared_ptr<Ship>> &fleet, const vector<shar
 			bodymods[it.first][day] += it.second;
 	}
 }
+
 
 
 

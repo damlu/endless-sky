@@ -25,6 +25,7 @@ PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 #include "Messages.h"
 #include "Mission.h"
 #include "Outfit.h"
+#include "Bodymod.h"
 #include "Person.h"
 #include "Planet.h"
 #include "Politics.h"
@@ -32,6 +33,7 @@ PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 #include "Random.h"
 #include "SavedGame.h"
 #include "Ship.h"
+#include "Suit.h"
 #include "ShipEvent.h"
 #include "StartConditions.h"
 #include "StellarObject.h"
@@ -85,13 +87,21 @@ void PlayerInfo::New()
 		ships.back()->SetIsYours();
 		ships.back()->SetGovernment(GameData::PlayerGovernment());
 	}
+
+	// Copy any ships in the start conditions.
+	for(const Suit &suit : start.Suits())
+	{
+		suits.emplace_back(new Suit(suit));
+		suits.back()->SetIsSpecial();
+		suits.back()->SetIsYours();
+	}
 	// Load starting conditions from a "start" item in the data files. If no
 	// such item exists, StartConditions defines default values.
 	date = start.GetDate();
 	GameData::SetDate(date);
-	// Make sure the fleet depreciation object knows it is tracking the player's
+	// Make sure the fleet armyDepreciation object knows it is tracking the player's
 	// fleet, not the planet's stock.
-	depreciation.Init(ships, date.DaysSinceEpoch());
+	armyDepreciation.Init(suits, date.DaysSinceEpoch());
 	
 	SetSystem(start.GetSystem());
 	SetPlanet(start.GetPlanet());
@@ -173,6 +183,15 @@ void PlayerInfo::Load(const string &path)
 			ships.back()->FinishLoading(false);
 			ships.back()->SetIsYours();
 		}
+		else if(child.Token(0) == "suit")
+		{
+			// Suits owned by the player have various special characteristics:
+			suits.push_back(shared_ptr<Suit>(new Suit()));
+			suits.back()->Load(child);
+			suits.back()->SetIsSpecial();
+			suits.back()->FinishLoading(false);
+			suits.back()->SetIsYours();
+		}
 		else if(child.Token(0) == "groups" && child.Size() >= 2 && !ships.empty())
 			groups[ships.back().get()] = child.Value(1);
 		else if(child.Token(0) == "account")
@@ -191,10 +210,20 @@ void PlayerInfo::Load(const string &path)
 				if(grand.Size() >= 2)
 					stock[GameData::Outfits().Get(grand.Token(0))] += grand.Value(1);
 		}
+		else if(child.Token(0) == "modStock")
+		{
+			for(const DataNode &grand : child)
+				if(grand.Size() >= 2)
+					modStock[GameData::Bodymods().Get(grand.Token(0))] += grand.Value(1);
+		}
 		else if(child.Token(0) == "fleet depreciation")
 			depreciation.Load(child);
 		else if(child.Token(0) == "stock depreciation")
 			stockDepreciation.Load(child);
+		else if(child.Token(0) == "army depreciation")
+			armyDepreciation.Load(child);
+		else if(child.Token(0) == "modStock depreciation")
+			modStockDepreciation.Load(child);
 		
 		// Records of things you have done or are doing, or have happened to you:
 		else if(child.Token(0) == "mission")
@@ -297,6 +326,9 @@ void PlayerInfo::Load(const string &path)
 	// will count as non-depreciated.
 	if(!depreciation.IsLoaded())
 		depreciation.Init(ships, date.DaysSinceEpoch());
+
+	if(!armyDepreciation.IsLoaded())
+		armyDepreciation.Init(suits, date.DaysSinceEpoch());
 	
 	// Modify the game data with any changes that were loaded from this file.
 	ApplyChanges();
@@ -567,6 +599,8 @@ void PlayerInfo::IncrementDate()
 	int64_t assets = depreciation.Value(ships, date.DaysSinceEpoch());
 	for(const shared_ptr<Ship> &ship : ships)
 		assets += ship->Cargo().Value(system);
+
+	assets = armyDepreciation.Value(suits, date.DaysSinceEpoch());
 	
 	// Have the player pay salaries, mortgages, etc. and print a message that
 	// summarizes the payments that were made.
@@ -721,6 +755,41 @@ const shared_ptr<Ship> &PlayerInfo::FlagshipPtr()
 	return (flagship && flagship->IsYours()) ? flagship : empty;
 }
 
+// Get a pointer to the suit that the player controls. This is always the first
+// suit in the list.
+const Suit *PlayerInfo::Flagsuit() const
+{
+	return const_cast<PlayerInfo *>(this)->FlagsuitPtr().get();
+}
+
+
+
+// Get a pointer to the suit that the player controls. This is always the first
+// suit in the list.
+Suit *PlayerInfo::Flagsuit()
+{
+	return FlagsuitPtr().get();
+}
+
+
+
+const shared_ptr<Suit> &PlayerInfo::FlagsuitPtr()
+{
+	if(!flagsuit)
+	{
+		for(const shared_ptr<Suit> &it : suits)
+			if(it->CanBeFlagsuit())
+			{
+				flagsuit = it;
+				break;
+			}
+	}
+
+	static const shared_ptr<Suit> empty;
+	return (flagsuit && flagsuit->IsYours()) ? flagsuit : empty;
+}
+
+
 
 
 // Access the full list of ships that the player owns.
@@ -728,6 +797,13 @@ const vector<shared_ptr<Ship>> &PlayerInfo::Ships() const
 {
 	return ships;
 }
+
+// Access the full list of suits that the player owns.
+const vector<shared_ptr<Suit>> &PlayerInfo::Suits() const
+{
+	return suits;
+}
+
 
 
 
@@ -737,6 +813,14 @@ void PlayerInfo::AddShip(const shared_ptr<Ship> &ship)
 	ships.push_back(ship);
 	ship->SetIsSpecial();
 	ship->SetIsYours();
+}
+
+// Add a captured suit to your fleet.
+void PlayerInfo::AddSuit(const shared_ptr<Suit> &suit)
+{
+	suits.push_back(suit);
+	suit->SetIsSpecial();
+	suit->SetIsYours();
 }
 
 
@@ -769,6 +853,32 @@ void PlayerInfo::BuyShip(const Ship *model, const string &name)
 	}
 }
 
+// Buy a ship of the given model, and give it the given name.
+void PlayerInfo::BuySuit(const Suit *model, const string &name)
+{
+	if(!model)
+		return;
+
+	int day = date.DaysSinceEpoch();
+	int64_t cost = modStockDepreciation.Value(*model, day);
+	if(accounts.Credits() >= cost)
+	{
+		suits.push_back(shared_ptr<Suit>(new Suit(*model)));
+		suits.back()->SetName(name);
+		suits.back()->SetIsSpecial();
+		suits.back()->SetIsYours();
+
+		accounts.AddCredits(-cost);
+		flagsuit.reset();
+
+		// Record the transfer of this suit in the armyDepreciation and modStock info.
+		armyDepreciation.Buy(*model, day, &modStockDepreciation);
+		for(const auto &it : model->Bodymods())
+			modStock[it.first] -= it.second;
+	}
+}
+
+
 
 
 // Sell the given ship (if it belongs to the player).
@@ -792,6 +902,28 @@ void PlayerInfo::SellShip(const Ship *selected)
 		}
 }
 
+// Sell the given suit (if it belongs to the player).
+void PlayerInfo::SellSuit(const Suit *selected)
+{
+	for(auto it = suits.begin(); it != suits.end(); ++it)
+		if(it->get() == selected)
+		{
+			int day = date.DaysSinceEpoch();
+			int64_t cost = armyDepreciation.Value(*selected, day);
+
+			// Record the transfer of this suit in the armyDepreciation and modStock info.
+			modStockDepreciation.Buy(*selected, day, &armyDepreciation);
+			for(const auto &it : selected->Bodymods())
+				modStock[it.first] += it.second;
+
+			accounts.AddCredits(cost);
+			suits.erase(it);
+			flagsuit.reset();
+			return;
+		}
+}
+
+
 
 
 void PlayerInfo::DisownShip(const Ship *selected)
@@ -804,6 +936,19 @@ void PlayerInfo::DisownShip(const Ship *selected)
 			return;
 		}
 }
+
+
+void PlayerInfo::DisownSuit(const Suit *selected)
+{
+	for(auto it = suits.begin(); it != suits.end(); ++it)
+		if(it->get() == selected)
+		{
+			suits.erase(it);
+			flagsuit.reset();
+			return;
+		}
+}
+
 
 
 
@@ -835,6 +980,16 @@ void PlayerInfo::RenameShip(const Ship *selected, const string &name)
 		}
 }
 
+// Rename the given suit.
+void PlayerInfo::RenameSuit(const Suit *selected, const string &name)
+{
+	for(auto it = suits.begin(); it != suits.end(); ++it)
+		if(it->get() == selected)
+		{
+			(*it)->SetName(name);
+			return;
+		}
+}
 
 
 // Change the order of the given ship in the list.
@@ -853,6 +1008,24 @@ void PlayerInfo::ReorderShip(int fromIndex, int toIndex)
 	ships.erase(ships.begin() + fromIndex);
 	ships.insert(ships.begin() + toIndex, ship);
 	flagship.reset();
+}
+
+// Change the order of the given suit in the list.
+void PlayerInfo::ReorderSuit(int fromIndex, int toIndex)
+{
+	// Make sure the indices are valid.
+	if(fromIndex == toIndex)
+		return;
+	if(static_cast<unsigned>(fromIndex) >= suits.size())
+		return;
+	if(static_cast<unsigned>(toIndex) >= suits.size())
+		return;
+
+	// Reorder the list.
+	shared_ptr<Suit> suit = suits[fromIndex];
+	suits.erase(suits.begin() + fromIndex);
+	suits.insert(suits.begin() + toIndex, suit);
+	flagsuit.reset();
 }
 
 
@@ -893,6 +1066,44 @@ int PlayerInfo::ReorderShips(const set<int> &fromIndices, int toIndex)
 	
 	return toIndex;
 }
+
+int PlayerInfo::ReorderSuits(const set<int> &fromIndices, int toIndex)
+{
+	if(fromIndices.empty() || static_cast<unsigned>(toIndex) >= suits.size())
+		return -1;
+
+	// When shifting suits up in the list, move to the desired index. If
+	// moving down, move after the selected index.
+	int direction = (*fromIndices.begin() < toIndex) ? 1 : 0;
+
+	// Remove the suits from last to first, so that each removal leaves all the
+	// remaining indices in the set still valid.
+	vector<shared_ptr<Suit>> removed;
+	for(set<int>::const_iterator it = fromIndices.end(); it != fromIndices.begin(); )
+	{
+		// The "it" pointer doesn't point to the beginning of the list, so it is
+		// safe to decrement it here.
+		--it;
+
+		// Bail out if any invalid indices are encountered.
+		if(static_cast<unsigned>(*it) >= suits.size())
+			return -1;
+
+		removed.insert(removed.begin(), suits[*it]);
+		suits.erase(suits.begin() + *it);
+		// If this index is before the insertion point, removing it causes the
+		// insertion point to shift back one space.
+		if(*it < toIndex)
+			--toIndex;
+	}
+	// Make sure the insertion index is within the list.
+	toIndex = min<int>(toIndex + direction, suits.size());
+	suits.insert(suits.begin() + toIndex, removed.begin(), removed.end());
+	flagsuit.reset();
+
+	return toIndex;
+}
+
 
 
 
@@ -1086,6 +1297,7 @@ bool PlayerInfo::TakeOff(UI *ui)
 	availableMissions.clear();
 	doneMissions.clear();
 	stock.clear();
+	modStock.clear();
 	
 	// Special persons who appeared last time you left the planet, can appear again.
 	GameData::ResetPersons();
@@ -1293,6 +1505,7 @@ bool PlayerInfo::TakeOff(UI *ui)
 	accounts.AddCredits(income);
 	cargo.Clear();
 	stockDepreciation = Depreciation();
+	modStockDepreciation = Depreciation();
 	if(sold)
 	{
 		// Report how much excess cargo was sold, and what profit you earned.
@@ -2041,6 +2254,14 @@ int PlayerInfo::Stock(const Outfit *outfit) const
 	return (it == stock.end() ? 0 : it->second);
 }
 
+// Keep track of any bodymods that you have sold since landing. These will be
+// available to buy back until you take off.
+int PlayerInfo::ModStock(const Bodymod *bodymod) const
+{
+	auto it = modStock.find(bodymod);
+	return (it == modStock.end() ? 0 : it->second);
+}
+
 
 
 // Transfer outfits from the player to the planet or vice versa.
@@ -2071,6 +2292,34 @@ void PlayerInfo::AddStock(const Outfit *outfit, int count)
 }
 
 
+// Transfer bodymods from the player to the planet or vice versa.
+void PlayerInfo::AddModStock(const Bodymod *bodymod, int count)
+{
+	// If you sell an individual bodymod that is not sold here and that you
+	// acquired by buying a ship here, have it appear as "in stock" in case you
+	// change your mind about selling it. (On the other hand, if you sell an
+	// entire ship right after buying it, its bodymods will not be "in stock.")
+	if(count > 0 && modStock[bodymod] < 0)
+		modStock[bodymod] = 0;
+	modStock[bodymod] += count;
+
+	int day = date.DaysSinceEpoch();
+	if(count > 0)
+	{
+		// Remember how depreciated these items are.
+		for(int i = 0; i < count; ++i)
+			modStockDepreciation.Buy(bodymod, day, &armyDepreciation);
+	}
+	else
+	{
+		// If the count is negative, bodymods are being transferred from modStock
+		// into the player's possession.
+		for(int i = 0; i < -count; ++i)
+			armyDepreciation.Buy(bodymod, day, &modStockDepreciation);
+	}
+}
+
+
 
 // Get depreciation information.
 const Depreciation &PlayerInfo::FleetDepreciation() const
@@ -2084,6 +2333,22 @@ const Depreciation &PlayerInfo::StockDepreciation() const
 {
 	return stockDepreciation;
 }
+
+
+// Get depreciation information.
+const Depreciation &PlayerInfo::ArmyDepreciation() const
+{
+	return armyDepreciation;
+}
+
+
+
+const Depreciation &PlayerInfo::ModStockDepreciation() const
+{
+	return modStockDepreciation;
+}
+
+
 
 
 
@@ -2467,6 +2732,12 @@ void PlayerInfo::Save(const string &path) const
 		if(it != groups.end() && it->second)
 			out.Write("groups", it->second);
 	}
+
+	// Save all the data for all the player's suits.
+	for(const shared_ptr<Suit> &suit : suits)
+	{
+		suit->Save(out);
+	}
 	
 	// Save accounting information, cargo, and cargo cost bases.
 	accounts.Save(out);
@@ -2496,6 +2767,20 @@ void PlayerInfo::Save(const string &path) const
 	}
 	depreciation.Save(out, date.DaysSinceEpoch());
 	stockDepreciation.Save(out, date.DaysSinceEpoch());
+
+	if(!modStock.empty())
+	{
+		out.Write("modStock");
+		out.BeginChild();
+		{
+			for(const auto &it : modStock)
+				if(it.second)
+					out.Write(it.first->Name(), it.second);
+		}
+		out.EndChild();
+	}
+	armyDepreciation.Save(out, date.DaysSinceEpoch());
+	modStockDepreciation.Save(out, date.DaysSinceEpoch());
 	
 	
 	// Records of things you have done or are doing, or have happened to you:

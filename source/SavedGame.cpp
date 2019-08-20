@@ -65,6 +65,16 @@ void SavedGame::Load(const string &path)
 					shipSprite = SpriteSet::Get(child.Token(1));
 			}
 		}
+		else if(node.Token(0) == "suit" && !suitSprite)
+		{
+			for(const DataNode &child : node)
+			{
+				if(child.Token(0) == "name" && child.Size() >= 2)
+					suitName = child.Token(1);
+				else if(child.Token(0) == "sprite" && child.Size() >= 2)
+					suitSprite = SpriteSet::Get(child.Token(1));
+			}
+		}
 	}
 }
 
@@ -97,6 +107,9 @@ void SavedGame::Clear()
 	
 	shipSprite = nullptr;
 	shipName.clear();
+
+	suitSprite = nullptr;
+	suitName.clear();
 }
 
 
@@ -146,4 +159,17 @@ const Sprite *SavedGame::ShipSprite() const
 const string &SavedGame::ShipName() const
 {
 	return shipName;
+}
+
+
+const Sprite *SavedGame::SuitSprite() const
+{
+	return suitSprite;
+}
+
+
+
+const string &SavedGame::SuitName() const
+{
+	return suitName;
 }

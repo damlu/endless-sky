@@ -555,6 +555,7 @@ Conversation LoadConversation()
 		{"<passengers>", "[your passengers]"},
 		{"<planet>", "[Planet]"},
 		{"<ship>", "[Ship]"},
+		{"<suit>", "[Suit]"},
 		{"<system>", "[Star]"},
 		{"<tons>", "[N tons]"}
 	};

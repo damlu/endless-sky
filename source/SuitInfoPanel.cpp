@@ -212,8 +212,8 @@ void SuitInfoPanel::UpdateInfo()
 	
 	const Suit &suit = **suitIt;
 	info.Update(suit, player.FleetDepreciation(), player.GetDate().DaysSinceEpoch());
-	if(player.Flagsuit() && &suit != player.Flagsuit())
-		player.Flagsuit()->SetTargetSuit(*suitIt);
+//	if(player.Flagsuit() && &suit != player.Flagsuit())
+//		player.Flagsuit()->SetTargetSuit(*suitIt);
 	
 	bodymods.clear();
 	for(const auto &it : suit.Bodymods())
@@ -598,8 +598,8 @@ bool SuitInfoPanel::CanDump() const
 
 
 
-void SuitInfoPanel::Dump()
-{
+//void SuitInfoPanel::Dump()
+//{
 //	if(!CanDump())
 //		return;
 //	
@@ -644,12 +644,12 @@ void SuitInfoPanel::Dump()
 //	info.Update(**suitIt, player.FleetDepreciation(), player.GetDate().DaysSinceEpoch());
 //	if(loss)
 //		Messages::Add("You jettisoned " + Format::Credits(loss) + " credits worth of cargo.");
-}
+//}
 
 
 
-void SuitInfoPanel::DumpPlunder(int count)
-{
+//void SuitInfoPanel::DumpPlunder(int count)
+//{
 //	int64_t loss = 0;
 //	count = min(count, (*suitIt)->Cargo().Get(selectedPlunder));
 //	if(count > 0)
@@ -661,12 +661,12 @@ void SuitInfoPanel::DumpPlunder(int count)
 //		if(loss)
 //			Messages::Add("You jettisoned " + Format::Credits(loss) + " credits worth of cargo.");
 //	}
-}
-
-
-
-void SuitInfoPanel::DumpCommodities(int count)
-{
+//}
+//
+//
+//
+//void SuitInfoPanel::DumpCommodities(int count)
+//{
 //	int64_t loss = 0;
 //	count = min(count, (*suitIt)->Cargo().Get(selectedCommodity));
 //	if(count > 0)
@@ -680,7 +680,7 @@ void SuitInfoPanel::DumpCommodities(int count)
 //		if(loss)
 //			Messages::Add("You jettisoned " + Format::Credits(loss) + " credits worth of cargo.");
 //	}
-}
+//}
 
 
 

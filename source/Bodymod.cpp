@@ -55,23 +55,12 @@ void Bodymod::Load(const DataNode &node)
 			category = child.Token(1);
 		else if(child.Token(0) == "plural" && child.Size() >= 2)
 			pluralName = child.Token(1);
-		else if(child.Token(0) == "flare sprite" && child.Size() >= 2)
-		{
-			flareSprites.emplace_back(Body(), 1);
-			flareSprites.back().first.LoadSprite(child);
-		}
-		else if(child.Token(0) == "flare sound" && child.Size() >= 2)
-			++flareSounds[Audio::Get(child.Token(1))];
-		else if(child.Token(0) == "afterburner effect" && child.Size() >= 2)
-			++afterburnerEffects[GameData::Effects().Get(child.Token(1))];
 		else if(child.Token(0) == "flotsam sprite" && child.Size() >= 2)
 			flotsamSprite = SpriteSet::Get(child.Token(1));
 		else if(child.Token(0) == "thumbnail" && child.Size() >= 2)
 			thumbnail = SpriteSet::Get(child.Token(1));
 		else if(child.Token(0) == "weapon")
 			LoadWeapon(child);
-		else if(child.Token(0) == "ammo" && child.Size() >= 2)
-			ammo = GameData::Bodymods().Get(child.Token(1));
 		else if(child.Token(0) == "description" && child.Size() >= 2)
 		{
 			description += child.Token(1);
@@ -91,35 +80,6 @@ void Bodymod::Load(const DataNode &node)
 		else
 			child.PrintTrace("Skipping unrecognized attribute:");
 	}
-	
-	// Legacy support for turrets that don't specify a turn rate:
-	if(IsWeapon() && attributes.Get("turret mounts") && !TurretTurn() && !AntiMissile())
-	{
-		SetTurretTurn(4.);
-		node.PrintTrace("Warning: Deprecated use of a turret without specified \"turret turn\":");
-	}
-	// Convert any legacy cargo / bodymod scan definitions into power & speed,
-	// so no runtime code has to check for both.
-	auto convertScan = [&](string &&kind) -> void
-	{
-		const string label = kind + " scan";
-		double initial = attributes.Get(label);
-		if(initial)
-		{
-			attributes[label] = 0.;
-			node.PrintTrace("Warning: Deprecated use of \"" + label + "\" instead of \""
-					+ label + " power\" and \"" + label + " speed\":");
-			
-			// A scan value of 300 is equivalent to a scan power of 9.
-			attributes[label + " power"] += initial * initial * .0001;
-			// The default scan speed of 1 is unrelated to the magnitude of the scan value.
-			// It may have been already specified, and if so, should not be increased.
-			if(!attributes.Get(label + " speed"))
-				attributes[label + " speed"] = 1.;
-		}
-	};
-	convertScan("bodymod");
-	convertScan("cargo");
 }
 
 
@@ -219,23 +179,7 @@ void Bodymod::Add(const Bodymod &other, int count)
 		if(fabs(attributes[at.first]) < EPS)
 			attributes[at.first] = 0.;
 	}
-	
-	for(const auto &it : other.flareSprites)
-	{
-		auto oit = flareSprites.begin();
-		for( ; oit != flareSprites.end(); ++oit)
-			if(oit->first.GetSprite() == it.first.GetSprite())
-				break;
-		
-		if(oit == flareSprites.end())
-			flareSprites.emplace_back(it.first, count * it.second);
-		else
-			oit->second += count * it.second;
-	}
-	for(const auto &it : other.flareSounds)
-		flareSounds[it.first] += count * it.second;
-	for(const auto &it : other.afterburnerEffects)
-		afterburnerEffects[it.first] += count * it.second;
+
 }
 
 
@@ -245,31 +189,6 @@ void Bodymod::Set(const char *attribute, double value)
 {
 	attributes[attribute] = value;
 }
-
-
-	
-// Get this bodymod's engine flare sprite, if any.
-const vector<pair<Body, int>> &Bodymod::FlareSprites() const
-{
-	return flareSprites;
-}
-
-
-
-const map<const Sound *, int> &Bodymod::FlareSounds() const
-{
-	return flareSounds;
-}
-
-
-
-// Get the afterburner effect, if any.
-const map<const Effect *, int> &Bodymod::AfterburnerEffects() const
-{
-	return afterburnerEffects;
-}
-
-
 
 // Get the sprite this bodymod uses when dumped into space.
 const Sprite *Bodymod::FlotsamSprite() const

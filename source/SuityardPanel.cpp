@@ -73,7 +73,7 @@ namespace {
 
 
 SuityardPanel::SuityardPanel(PlayerInfo &player)
-	: ShopPanel(player, false), modifier(0)
+	: ShopPanel(player, "suityard"), modifier(0)
 {
 	for(const auto &it : GameData::Suits())
 		catalog[it.second.Attributes().Category()].insert(it.first);
