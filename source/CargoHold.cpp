@@ -18,6 +18,7 @@ PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 #include "GameData.h"
 #include "Mission.h"
 #include "Outfit.h"
+#include "Bodymod.h"
 #include "System.h"
 
 #include <algorithm>
@@ -43,6 +44,21 @@ namespace {
 		
 		return sortedOutfits;
 	}
+	vector<const Bodymod *> OrderBodymodsBySize(const map<const Bodymod *, int> &bodymods)
+	{
+		vector<const Bodymod *> sortedBodymods;
+		for(const auto &it : bodymods)
+			sortedBodymods.emplace_back(it.first);
+
+		sort(sortedBodymods.begin(), sortedBodymods.end(),
+			 [] (const Bodymod *lhs, const Bodymod *rhs)
+			 {
+				 return lhs->Mass() > rhs->Mass();
+			 }
+		);
+
+		return sortedBodymods;
+	}
 }
 
 
@@ -54,6 +70,7 @@ void CargoHold::Clear()
 	bunks = 0;
 	commodities.clear();
 	outfits.clear();
+	bodymods.clear();
 	missionCargo.clear();
 	passengers.clear();
 }
@@ -83,6 +100,15 @@ void CargoHold::Load(const DataNode &node)
 				const Outfit *outfit = GameData::Outfits().Get(grand.Token(0));
 				int count = (grand.Size() < 2) ? 1 : grand.Value(1);
 				outfits[outfit] += count;
+			}
+		}
+		else if(child.Token(0) == "bodymods")
+		{
+			for(const DataNode &grand : child)
+			{
+				const Bodymod *bodymod = GameData::Bodymods().Get(grand.Token(0));
+				int count = (grand.Size() < 2) ? 1 : grand.Value(1);
+				bodymods[bodymod] += count;
 			}
 		}
 	}
@@ -136,10 +162,41 @@ void CargoHold::Save(DataWriter &out) const
 			
 			out.Write(it.first->Name(), it.second);
 		}
+
 	// Back out any indentation blocks that are set, depending on what sorts of
 	// cargo were written to the file.
 	if(!firstOutfit)
 		out.EndChild();
+
+	bool firstBodymod = true;
+	for(const auto &it : bodymods)
+		if(it.second && !it.first->Name().empty())
+		{
+			// It is possible this cargo hold contained no commodities, meaning
+			// we must print the opening tag now.
+			if(first)
+			{
+				out.Write("cargo");
+				out.BeginChild();
+			}
+			first = false;
+
+			// If this is the first bodymod to be written, print the opening tag.
+			if(firstBodymod)
+			{
+				out.Write("bodymods");
+				out.BeginChild();
+			}
+			firstBodymod = false;
+
+			out.Write(it.first->Name(), it.second);
+		}
+
+	// Back out any indentation blocks that are set, depending on what sorts of
+	// cargo were written to the file.
+	if(!firstBodymod)
+		out.EndChild();
+
 	if(!first)
 		out.EndChild();
 	
@@ -177,7 +234,7 @@ int CargoHold::Free() const
 // (Some outfits may have non-integral masses.)
 int CargoHold::Used() const
 {
-	return CommoditiesSize() + OutfitsSize() + MissionCargoSize();
+	return CommoditiesSize() + OutfitsSize() + BodymodsSize() + MissionCargoSize();
 }
 
 
@@ -202,6 +259,16 @@ int CargoHold::OutfitsSize() const
 	return ceil(size);
 }
 
+// Get the total mass of bodymod cargo, rounded up to the nearest ton.
+int CargoHold::BodymodsSize() const
+{
+	double size = 0.;
+	for(const auto &it : bodymods)
+		size += it.second * it.first->Mass();
+	return ceil(size);
+}
+
+
 
 
 // Check if any outfits are being carried. Note that some outfits may have mass
@@ -214,6 +281,19 @@ bool CargoHold::HasOutfits() const
 		if(it.second)
 			return true;
 	
+	return false;
+}
+
+// Check if any bodymods are being carried. Note that some bodymods may have mass
+// zero, so this check cannot be done by calling BodymodsSize().
+bool CargoHold::HasBodymods() const
+{
+	// The code for adding and removing bodymods does not clear the entry in the
+	// map if its value becomes zero, so we need to check all the entries:
+	for(const auto &it : bodymods)
+		if(it.second)
+			return true;
+
 	return false;
 }
 
@@ -244,7 +324,7 @@ bool CargoHold::IsEmpty() const
 {
 	// The outfits map's entries are not erased if they are equal to zero, so
 	// it's not enough to just test outfits.empty().
-	return commodities.empty() && !HasOutfits() && missionCargo.empty() && passengers.empty();
+	return commodities.empty() && !HasOutfits() && !HasBodymods() && missionCargo.empty() && passengers.empty();
 }
 
 
@@ -292,6 +372,13 @@ int CargoHold::Get(const Outfit *outfit) const
 	return (it == outfits.end() ? 0 : it->second);
 }
 
+// Spare bodymods (including plunder and mined materials):
+int CargoHold::Get(const Bodymod *bodymod) const
+{
+	map<const Bodymod *, int>::const_iterator it = bodymods.find(bodymod);
+	return (it == bodymods.end() ? 0 : it->second);
+}
+
 
 
 // Mission cargo:
@@ -325,6 +412,13 @@ const map<const Outfit *, int> &CargoHold::Outfits() const
 {
 	return outfits;
 }
+
+// Access the bodymods map directly.
+const map<const Bodymod *, int> &CargoHold::Bodymods() const
+{
+	return bodymods;
+}
+
 
 
 
@@ -375,6 +469,22 @@ int CargoHold::Transfer(const Outfit *outfit, int amount, CargoHold &to)
 	int added = to.Add(outfit, removed);
 	outfits[outfit] += removed - added;
 	
+	return added;
+}
+
+// Transfer bodymods from one cargo hold to another.
+int CargoHold::Transfer(const Bodymod *bodymod, int amount, CargoHold &to)
+{
+	if(!amount)
+		return 0;
+
+	// Remove up to the specified number of items from this cargo hold, adding
+	// them to the given cargo hold if possible. If not possible, add the
+	// remainder back to this cargo hold, even if there is not space for it.
+	int removed = Remove(bodymod, amount);
+	int added = to.Add(bodymod, removed);
+	bodymods[bodymod] += removed - added;
+
 	return added;
 }
 
@@ -451,6 +561,9 @@ void CargoHold::TransferAll(CargoHold &to, bool transferPassengers)
 	const vector<const Outfit *> outfitOrder = OrderOutfitsBySize(outfits);
 	for(const auto &outfit : outfitOrder)
 		Transfer(outfit, outfits[outfit], to);
+	const vector<const Bodymod *> bodymodOrder = OrderBodymodsBySize(bodymods);
+	for(const auto &bodymod : bodymodOrder)
+		Transfer(bodymod, bodymods[bodymod], to);
 	for(const auto &it : commodities)
 		Transfer(it.first, it.second, to);
 }
@@ -488,6 +601,21 @@ int CargoHold::Add(const Outfit *outfit, int amount)
 
 
 
+// Add the given number of copies of the given bodymod.
+int CargoHold::Add(const Bodymod *bodymod, int amount)
+{
+	if(amount < 0)
+		return -Remove(bodymod, -amount);
+
+	// If the bodymod has mass and this cargo hold has a size limit, apply it.
+	double mass = bodymod->Mass();
+	if(size >= 0 && mass > 0.)
+		amount = max(0, min(amount, static_cast<int>(Free() / mass)));
+	bodymods[bodymod] += amount;
+	return amount;
+}
+
+
 // Remove the given amount of the given commodity.
 int CargoHold::Remove(const string &commodity, int amount)
 {
@@ -509,6 +637,18 @@ int CargoHold::Remove(const Outfit *outfit, int amount)
 	
 	amount = min(amount, outfits[outfit]);
 	outfits[outfit] -= amount;
+	return amount;
+}
+
+
+// Remove the given number of copies of the given bodymod.
+int CargoHold::Remove(const Bodymod *bodymod, int amount)
+{
+	if(amount < 0)
+		return Add(bodymod, -amount);
+
+	amount = min(amount, bodymods[bodymod]);
+	bodymods[bodymod] -= amount;
 	return amount;
 }
 
@@ -547,6 +687,8 @@ int64_t CargoHold::Value(const System *system) const
 	// the case unless the player bought into cargo for some reason.
 	for(const auto &it : outfits)
 		value += it.first->Cost() * it.second * Depreciation::Full();
+	for(const auto &it : bodymods)
+		value += it.first->Cost() * it.second * Depreciation::Full();
 	return value;
 }
 
@@ -560,6 +702,14 @@ int CargoHold::IllegalCargoFine() const
 	int worst = 0;
 	// Carrying an illegal outfit is only half as bad as having it equipped.
 	for(const auto &it : outfits)
+	{
+		int fine = it.first->Get("illegal");
+		if(fine < 0)
+			return fine;
+		worst = max(worst, fine / 2);
+	}
+	// Carrying an illegal bodymod is only half as bad as having it equipped.
+	for(const auto &it : bodymods)
 	{
 		int fine = it.first->Get("illegal");
 		if(fine < 0)

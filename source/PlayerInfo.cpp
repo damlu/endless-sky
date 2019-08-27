@@ -99,9 +99,9 @@ void PlayerInfo::New()
 	// such item exists, StartConditions defines default values.
 	date = start.GetDate();
 	GameData::SetDate(date);
-	// Make sure the fleet armyDepreciation object knows it is tracking the player's
+	// Make sure the fleet depreciation object knows it is tracking the player's
 	// fleet, not the planet's stock.
-	armyDepreciation.Init(suits, date.DaysSinceEpoch());
+	depreciation.Init(suits, date.DaysSinceEpoch());
 	
 	SetSystem(start.GetSystem());
 	SetPlanet(start.GetPlanet());
@@ -220,10 +220,10 @@ void PlayerInfo::Load(const string &path)
 			depreciation.Load(child);
 		else if(child.Token(0) == "stock depreciation")
 			stockDepreciation.Load(child);
-		else if(child.Token(0) == "army depreciation")
-			armyDepreciation.Load(child);
-		else if(child.Token(0) == "modStock depreciation")
-			modStockDepreciation.Load(child);
+//		else if(child.Token(0) == "army depreciation")
+//			armyDepreciation.Load(child);
+//		else if(child.Token(0) == "modStock depreciation")
+//			modStockDepreciation.Load(child);
 		
 		// Records of things you have done or are doing, or have happened to you:
 		else if(child.Token(0) == "mission")
@@ -326,9 +326,10 @@ void PlayerInfo::Load(const string &path)
 	// will count as non-depreciated.
 	if(!depreciation.IsLoaded())
 		depreciation.Init(ships, date.DaysSinceEpoch());
+		depreciation.Init(suits, date.DaysSinceEpoch());
 
-	if(!armyDepreciation.IsLoaded())
-		armyDepreciation.Init(suits, date.DaysSinceEpoch());
+//	if(!armyDepreciation.IsLoaded())
+//		armyDepreciation.Init(suits, date.DaysSinceEpoch());
 	
 	// Modify the game data with any changes that were loaded from this file.
 	ApplyChanges();
@@ -600,7 +601,7 @@ void PlayerInfo::IncrementDate()
 	for(const shared_ptr<Ship> &ship : ships)
 		assets += ship->Cargo().Value(system);
 
-	assets = armyDepreciation.Value(suits, date.DaysSinceEpoch());
+	assets = depreciation.Value(suits, date.DaysSinceEpoch());
 	
 	// Have the player pay salaries, mortgages, etc. and print a message that
 	// summarizes the payments that were made.
@@ -860,7 +861,7 @@ void PlayerInfo::BuySuit(const Suit *model, const string &name)
 		return;
 
 	int day = date.DaysSinceEpoch();
-	int64_t cost = modStockDepreciation.Value(*model, day);
+	int64_t cost = stockDepreciation.Value(*model, day);
 	if(accounts.Credits() >= cost)
 	{
 		suits.push_back(shared_ptr<Suit>(new Suit(*model)));
@@ -871,8 +872,8 @@ void PlayerInfo::BuySuit(const Suit *model, const string &name)
 		accounts.AddCredits(-cost);
 		flagsuit.reset();
 
-		// Record the transfer of this suit in the armyDepreciation and modStock info.
-		armyDepreciation.Buy(*model, day, &modStockDepreciation);
+		// Record the transfer of this suit in the depreciation and modStock info.
+		depreciation.Buy(*model, day, &stockDepreciation);
 		for(const auto &it : model->Bodymods())
 			modStock[it.first] -= it.second;
 	}
@@ -909,10 +910,10 @@ void PlayerInfo::SellSuit(const Suit *selected)
 		if(it->get() == selected)
 		{
 			int day = date.DaysSinceEpoch();
-			int64_t cost = armyDepreciation.Value(*selected, day);
+			int64_t cost = depreciation.Value(*selected, day);
 
-			// Record the transfer of this suit in the armyDepreciation and modStock info.
-			modStockDepreciation.Buy(*selected, day, &armyDepreciation);
+			// Record the transfer of this suit in the depreciation and modStock info.
+			stockDepreciation.Buy(*selected, day, &depreciation);
 			for(const auto &it : selected->Bodymods())
 				modStock[it.first] += it.second;
 
@@ -1505,7 +1506,7 @@ bool PlayerInfo::TakeOff(UI *ui)
 	accounts.AddCredits(income);
 	cargo.Clear();
 	stockDepreciation = Depreciation();
-	modStockDepreciation = Depreciation();
+//	modStockDepreciation = Depreciation();
 	if(sold)
 	{
 		// Report how much excess cargo was sold, and what profit you earned.
@@ -2256,7 +2257,7 @@ int PlayerInfo::Stock(const Outfit *outfit) const
 
 // Keep track of any bodymods that you have sold since landing. These will be
 // available to buy back until you take off.
-int PlayerInfo::ModStock(const Bodymod *bodymod) const
+int PlayerInfo::Stock(const Bodymod *bodymod) const
 {
 	auto it = modStock.find(bodymod);
 	return (it == modStock.end() ? 0 : it->second);
@@ -2293,7 +2294,7 @@ void PlayerInfo::AddStock(const Outfit *outfit, int count)
 
 
 // Transfer bodymods from the player to the planet or vice versa.
-void PlayerInfo::AddModStock(const Bodymod *bodymod, int count)
+void PlayerInfo::AddStock(const Bodymod *bodymod, int count)
 {
 	// If you sell an individual bodymod that is not sold here and that you
 	// acquired by buying a ship here, have it appear as "in stock" in case you
@@ -2308,14 +2309,14 @@ void PlayerInfo::AddModStock(const Bodymod *bodymod, int count)
 	{
 		// Remember how depreciated these items are.
 		for(int i = 0; i < count; ++i)
-			modStockDepreciation.Buy(bodymod, day, &armyDepreciation);
+			stockDepreciation.Buy(bodymod, day, &depreciation);
 	}
 	else
 	{
 		// If the count is negative, bodymods are being transferred from modStock
 		// into the player's possession.
 		for(int i = 0; i < -count; ++i)
-			armyDepreciation.Buy(bodymod, day, &modStockDepreciation);
+			depreciation.Buy(bodymod, day, &stockDepreciation);
 	}
 }
 
@@ -2338,14 +2339,14 @@ const Depreciation &PlayerInfo::StockDepreciation() const
 // Get depreciation information.
 const Depreciation &PlayerInfo::ArmyDepreciation() const
 {
-	return armyDepreciation;
+	return depreciation;
 }
 
 
 
 const Depreciation &PlayerInfo::ModStockDepreciation() const
 {
-	return modStockDepreciation;
+	return stockDepreciation;
 }
 
 
@@ -2765,8 +2766,6 @@ void PlayerInfo::Save(const string &path) const
 		}
 		out.EndChild();
 	}
-	depreciation.Save(out, date.DaysSinceEpoch());
-	stockDepreciation.Save(out, date.DaysSinceEpoch());
 
 	if(!modStock.empty())
 	{
@@ -2779,9 +2778,13 @@ void PlayerInfo::Save(const string &path) const
 		}
 		out.EndChild();
 	}
-	armyDepreciation.Save(out, date.DaysSinceEpoch());
-	modStockDepreciation.Save(out, date.DaysSinceEpoch());
-	
+	depreciation.Save(out, date.DaysSinceEpoch());
+	stockDepreciation.Save(out, date.DaysSinceEpoch());
+
+
+//	armyDepreciation.Save(out, date.DaysSinceEpoch());
+//	modStockDepreciation.Save(out, date.DaysSinceEpoch());
+//
 	
 	// Records of things you have done or are doing, or have happened to you:
 	out.Write();

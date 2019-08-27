@@ -21,6 +21,7 @@ class DataNode;
 class DataWriter;
 class Mission;
 class Outfit;
+class Bodymod;
 class System;
 
 
@@ -49,6 +50,8 @@ public:
 	int CommoditiesSize() const;
 	int OutfitsSize() const;
 	bool HasOutfits() const;
+	int BodymodsSize() const;
+	bool HasBodymods() const;
 	int MissionCargoSize() const;
 	bool HasMissionCargo() const;
 	bool IsEmpty() const;
@@ -62,12 +65,15 @@ public:
 	int Get(const std::string &commodity) const;
 	// Spare outfits:
 	int Get(const Outfit *outfit) const;
+	// Spare bodymods:
+	int Get(const Bodymod *bodymod) const;
 	// Mission cargo:
 	int Get(const Mission *mission) const;
 	int GetPassengers(const Mission *mission) const;
 	
 	const std::map<std::string, int> &Commodities() const;
 	const std::map<const Outfit *, int> &Outfits() const;
+	const std::map<const Bodymod *, int> &Bodymods() const;
 	// Note: some missions may have cargo that takes up 0 space, but should
 	// still show up on the cargo listing.
 	const std::map<const Mission *, int> &MissionCargo() const;
@@ -78,6 +84,7 @@ public:
 	// unlimited supply. The return value is the actual number transferred.
 	int Transfer(const std::string &commodity, int amount, CargoHold &to);
 	int Transfer(const Outfit *outfit, int amount, CargoHold &to);
+	int Transfer(const Bodymod *bodymod, int amount, CargoHold &to);
 	int Transfer(const Mission *mission, int amount, CargoHold &to);
 	int TransferPassengers(const Mission *mission, int amount, CargoHold &to);
 	// Transfer as much as the given cargo hold has capacity for. The priority is
@@ -88,8 +95,10 @@ public:
 	// specified, but they have clearer names to make the code more readable.
 	int Add(const std::string &commodity, int amount = 1);
 	int Add(const Outfit *outfit, int amount = 1);
+	int Add(const Bodymod *bodymod, int amount = 1);
 	int Remove(const std::string &commodity, int amount = 1);
 	int Remove(const Outfit *outfit, int amount = 1);
+	int Remove(const Bodymod *bodymod, int amount = 1);
 	
 	// Add or remove any cargo or passengers associated with the given mission.
 	void AddMissionCargo(const Mission *mission);
@@ -112,6 +121,7 @@ private:
 	// Track how many objects of each type are being carried:
 	std::map<std::string, int> commodities;
 	std::map<const Outfit *, int> outfits;
+	std::map<const Bodymod *, int> bodymods;
 	std::map<const Mission *, int> missionCargo;
 	std::map<const Mission *, int> passengers;
 };

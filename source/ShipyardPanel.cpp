@@ -102,6 +102,15 @@ int ShipyardPanel::DrawPlayerShipInfo(const Point &point)
 
 
 
+int ShipyardPanel::DrawPlayerSuitInfo(const Point &point)
+{
+	suitInfo.Update(*playerSuit, player.FleetDepreciation(), day);
+	suitInfo.DrawAttributes(point);
+
+	return suitInfo.AttributesHeight();
+}
+
+
 bool ShipyardPanel::HasItem(const string &name) const
 {
 	const Ship *ship = GameData::Ships().Get(name);

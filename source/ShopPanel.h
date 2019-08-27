@@ -17,6 +17,7 @@ PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
 #include "ClickZone.h"
 #include "OutfitInfoDisplay.h"
+#include "BodymodInfoDisplay.h"
 #include "Point.h"
 #include "ShipInfoDisplay.h"
 #include "SuitInfoDisplay.h"
@@ -159,7 +160,7 @@ protected:
 	ShipInfoDisplay shipInfo;
 	SuitInfoDisplay suitInfo;
 	OutfitInfoDisplay outfitInfo;
-//	BodymodInfoDisplay bodymodInfo;
+	BodymodInfoDisplay bodymodInfo;
 	
 	mutable Point warningPoint;
 	mutable std::string warningType;
