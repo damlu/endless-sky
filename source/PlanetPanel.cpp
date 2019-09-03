@@ -25,11 +25,14 @@ PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 #include "MapDetailPanel.h"
 #include "MissionPanel.h"
 #include "OutfitterPanel.h"
+#include "BodymodderPanel.h"
 #include "Planet.h"
 #include "PlayerInfo.h"
 #include "PlayerInfoPanel.h"
 #include "Ship.h"
 #include "ShipyardPanel.h"
+#include "Suit.h"
+#include "SuityardPanel.h"
 #include "SpaceportPanel.h"
 #include "System.h"
 #include "TradingPanel.h"
@@ -116,6 +119,9 @@ void PlanetPanel::Draw()
 		
 		if(planet.HasShipyard())
 			info.SetCondition("has shipyard");
+
+		if(planet.HasSuityard())
+			info.SetCondition("has suityard");
 		
 		if(planet.HasOutfitter())
 			for(const auto &it : player.Ships())
@@ -124,6 +130,9 @@ void PlanetPanel::Draw()
 					info.SetCondition("has outfitter");
 					break;
 				}
+
+		if(planet.HasBodymodder())
+			info.SetCondition("has bodymodder");
 	}
 	
 	ui.Draw(info, this);
@@ -169,6 +178,11 @@ bool PlanetPanel::KeyDown(SDL_Keycode key, Uint16 mod, const Command &command, b
 		GetUI()->Push(new ShipyardPanel(player));
 		return true;
 	}
+	else if(key == 'u' && hasAccess && planet.HasSuityard())
+	{
+		GetUI()->Push(new SuityardPanel(player));
+		return true;
+	}
 	else if(key == 'o' && hasAccess && planet.HasOutfitter())
 	{
 		for(const auto &it : player.Ships())
@@ -177,6 +191,11 @@ bool PlanetPanel::KeyDown(SDL_Keycode key, Uint16 mod, const Command &command, b
 				GetUI()->Push(new OutfitterPanel(player));
 				return true;
 			}
+	}
+	else if(key == 'm' && hasAccess && planet.HasBodymodder())
+	{
+		GetUI()->Push(new BodymodderPanel(player));
+		return true;
 	}
 	else if(key == 'j' && hasAccess && flagship && planet.IsInhabited())
 	{

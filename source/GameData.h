@@ -106,7 +106,7 @@ public:
 	static const Set<Outfit> &Outfits();
 	static const Set<Bodymod> &Bodymods();
 	static const Set<Sale<Outfit>> &Outfitters();
-	static const Set<Sale<Bodymod>> &Bodymodters();
+	static const Set<Sale<Bodymod>> &Bodymodders();
 	static const Set<Person> &Persons();
 	static const Set<Phrase> &Phrases();
 	static const Set<Planet> &Planets();

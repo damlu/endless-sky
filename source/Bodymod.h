@@ -34,7 +34,7 @@ class Sprite;
 // "attributes" are simply stored as a series of key-value pairs, and an bodymod
 // can add to or subtract from any of those values. Weapons also have another
 // set of attributes unique to them, and bodymods can also specify additional
-// information like the sprite to use in the bodymodter panel for selling them,
+// information like the sprite to use in the bodymodder panel for selling them,
 // or the sprite or sound to be used for an engine flare.
 class Bodymod : public Weapon {
 public:
@@ -54,7 +54,7 @@ public:
 	double Mass() const;
 	// Get the licenses needed to buy or operate this ship.
 	const std::vector<std::string> &Licenses() const;
-	// Get the image to display in the bodymodter when buying this item.
+	// Get the image to display in the bodymodder when buying this item.
 	const Sprite *Thumbnail() const;
 	
 	double Get(const char *attribute) const;

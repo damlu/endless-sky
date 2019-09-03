@@ -475,27 +475,47 @@ interface "planet"
 	button l
 		center -60 -140
 		dimensions 720 360
-	
+
 	visible if "has shipyard"
 	sprite "ui/planet dialog button"
-		center 280 90
+		center 280 150
 	button s "_Shipyard"
-		center 280 90
+		center 280 150
 		dimensions 140 40
 		size 18
 		align right
 		pad 10 0
-	
+
 	visible if "has outfitter"
 	sprite "ui/planet dialog button"
-		center 280 150
+		center 280 210
 	button o "_Outfitter"
-		center 280 150
+		center 280 210
 		dimensions 140 40
 		size 18
 		align right
 		pad 10 0
-	
+
+	visible if "has spaceport"
+	sprite "ui/planet dialog button"
+		center 280 90
+	button p "Space_port"
+		center 280 90
+		dimensions 140 40
+		size 18
+		align right
+		pad 10 0
+
+	visible if "has ship"
+	sprite "ui/planet dialog button"
+		center 280 330
+	button d "_Depart"
+		center 280 330
+		dimensions 140 40
+		size 18
+		align right
+		pad 10 0
+
 	visible if "is inhabited"
 	sprite "ui/planet dialog button"
 		center -400 150
@@ -506,9 +526,9 @@ interface "planet"
 		align left
 		pad 10 0
 	sprite "ui/planet dialog button"
-		center 280 210
+		center 280 270
 	button h "_Hire Crew"
-		center 280 210
+		center 280 270
 		dimensions 140 40
 		size 18
 		align right
@@ -533,25 +553,25 @@ interface "planet"
 		size 18
 		align left
 		pad 10 0
-	
-	visible if "has spaceport"
+
+	visible if "has suityard"
 	sprite "ui/planet dialog button"
 		center -400 270
-	button p "Space_port"
+	button u "_Suityard"
 		center -400 270
 		dimensions 140 40
 		size 18
 		align left
 		pad 10 0
-	
-	visible if "has ship"
+
+	visible if "has bodymodder"
 	sprite "ui/planet dialog button"
-		center 280 270
-	button d "_Depart"
-		center 280 270
+		center -400 330
+	button m "_Bodymodder"
+		center -400 330
 		dimensions 140 40
 		size 18
-		align right
+		align left
 		pad 10 0
 
 

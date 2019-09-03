@@ -94,6 +94,15 @@ int OutfitterPanel::DrawPlayerShipInfo(const Point &point)
 	return shipInfo.AttributesHeight();
 }
 
+int OutfitterPanel::DrawPlayerSuitInfo(const Point &point)
+{
+	suitInfo.Update(*playerSuit, player.FleetDepreciation(), day);
+	suitInfo.DrawAttributes(point);
+
+	return suitInfo.AttributesHeight();
+}
+
+
 
 
 bool OutfitterPanel::HasItem(const string &name) const

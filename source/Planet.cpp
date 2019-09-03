@@ -20,6 +20,7 @@ PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 #include "Politics.h"
 #include "Random.h"
 #include "Ship.h"
+#include "Suit.h"
 #include "ShipEvent.h"
 #include "SpriteSet.h"
 #include "System.h"
@@ -99,8 +100,12 @@ void Planet::Load(const DataNode &node)
 				spaceport.clear();
 			else if(key == "shipyard")
 				shipSales.clear();
+			else if(key == "suityard")
+				suitSales.clear();
 			else if(key == "outfitter")
 				outfitSales.clear();
+			else if(key == "bodymodder")
+				bodymodSales.clear();
 			else if(key == "government")
 				government = nullptr;
 			else if(key == "required reputation")
@@ -141,12 +146,26 @@ void Planet::Load(const DataNode &node)
 			else
 				shipSales.insert(GameData::Shipyards().Get(value));
 		}
+		else if(key == "suityard")
+		{
+			if(remove)
+				suitSales.erase(GameData::Suityards().Get(value));
+			else
+				suitSales.insert(GameData::Suityards().Get(value));
+		}
 		else if(key == "outfitter")
 		{
 			if(remove)
 				outfitSales.erase(GameData::Outfitters().Get(value));
 			else
 				outfitSales.insert(GameData::Outfitters().Get(value));
+		}
+		else if(key == "bodymodder")
+		{
+			if(remove)
+				bodymodSales.erase(GameData::Bodymodders().Get(value));
+			else
+				bodymodSales.insert(GameData::Bodymodders().Get(value));
 		}
 		// Handle the attributes which cannot be "removed."
 		else if(remove)
@@ -208,8 +227,8 @@ void Planet::Load(const DataNode &node)
 			child.PrintTrace("Skipping unrecognized attribute:");
 	}
 	
-	static const vector<string> AUTO_ATTRIBUTES = {"spaceport", "shipyard", "outfitter"};
-	bool autoValues[3] = {!spaceport.empty(), !shipSales.empty(), !outfitSales.empty()};
+	static const vector<string> AUTO_ATTRIBUTES = {"spaceport", "shipyard", "suityard", "outfitter", "bodymodder"};
+	bool autoValues[5] = {!spaceport.empty(), !shipSales.empty(), !suitSales.empty(), !outfitSales.empty(), !bodymodSales.empty()};
 	for(unsigned i = 0; i < AUTO_ATTRIBUTES.size(); ++i)
 	{
 		if(autoValues[i])
@@ -323,6 +342,12 @@ bool Planet::HasShipyard() const
 	return !Shipyard().empty();
 }
 
+// Check if this planet has a suityard.
+bool Planet::HasSuityard() const
+{
+	return !Suityard().empty();
+}
+
 
 
 // Get the list of ships in the shipyard.
@@ -336,11 +361,29 @@ const Sale<Ship> &Planet::Shipyard() const
 }
 
 
+// Get the list of suits in the suityard.
+const Sale<Suit> &Planet::Suityard() const
+{
+	suityard.clear();
+	for(const Sale<Suit> *sale : suitSales)
+		suityard.Add(*sale);
+
+	return suityard;
+}
+
+
+
 
 // Check if this planet has an outfitter.
 bool Planet::HasOutfitter() const
 {
 	return !Outfitter().empty();
+}
+
+// Check if this planet has an bodymodder.
+bool Planet::HasBodymodder() const
+{
+	return !Bodymodder().empty();
 }
 
 
@@ -353,6 +396,16 @@ const Sale<Outfit> &Planet::Outfitter() const
 		outfitter.Add(*sale);
 	
 	return outfitter;
+}
+
+// Get the list of bodymods available from the bodymodder.
+const Sale<Bodymod> &Planet::Bodymodder() const
+{
+	bodymodder.clear();
+	for(const Sale<Bodymod> *sale : bodymodSales)
+		bodymodder.Add(*sale);
+
+	return bodymodder;
 }
 
 

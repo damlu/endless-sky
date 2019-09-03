@@ -25,8 +25,10 @@ class DataNode;
 class Fleet;
 class Government;
 class Outfit;
+class Bodymod;
 class PlayerInfo;
 class Ship;
+class Suit;
 class Sprite;
 class System;
 
@@ -70,12 +72,20 @@ public:
 	
 	// Check if this planet has a shipyard.
 	bool HasShipyard() const;
+	// Check if this planet has a suityard.
+	bool HasSuityard() const;
 	// Get the list of ships in the shipyard.
 	const Sale<Ship> &Shipyard() const;
+	// Get the list of suits in the suityard.
+	const Sale<Suit> &Suityard() const;
 	// Check if this planet has an outfitter.
 	bool HasOutfitter() const;
+	// Check if this planet has an bodymodder.
+	bool HasBodymodder() const;
 	// Get the list of outfits available from the outfitter.
 	const Sale<Outfit> &Outfitter() const;
+	// Get the list of outfits available from the outfitter.
+	const Sale<Bodymod> &Bodymodder() const;
 	
 	// Get this planet's government. If not set, returns the system's government.
 	const Government *GetGovernment() const;
@@ -135,11 +145,15 @@ private:
 	std::set<std::string> attributes;
 	
 	std::set<const Sale<Ship> *> shipSales;
+	std::set<const Sale<Suit> *> suitSales;
 	std::set<const Sale<Outfit> *> outfitSales;
+	std::set<const Sale<Bodymod> *> bodymodSales;
 	// The lists above will be converted into actual ship lists when they are
 	// first asked for:
 	mutable Sale<Ship> shipyard;
+	mutable Sale<Suit> suityard;
 	mutable Sale<Outfit> outfitter;
+	mutable Sale<Bodymod> bodymodder;
 	
 	const Government *government = nullptr;
 	double requiredReputation = 0.;

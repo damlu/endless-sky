@@ -237,7 +237,7 @@ void GameData::CheckReferences()
 		"galaxy",
 		"government",
 		"outfitter",
-		"bodymodter",
+		"bodymodder",
 		"news",
 		"planet",
 		"shipyard",
@@ -288,8 +288,8 @@ void GameData::CheckReferences()
 		if(it.second.empty() && !deferred["outfitter"].count(it.first))
 			Files::LogError("Warning: outfitter \"" + it.first + "\" is referred to, but has no outfits.");
 	for(const auto &it : bodymodSales)
-		if(it.second.empty() && !deferred["bodymodter"].count(it.first))
-			Files::LogError("Warning: bodymodter \"" + it.first + "\" is referred to, but has no bodymods.");
+		if(it.second.empty() && !deferred["bodymodder"].count(it.first))
+			Files::LogError("Warning: bodymodder \"" + it.first + "\" is referred to, but has no bodymods.");
 	for(const auto &it : phrases)
 		if(it.second.Name().empty())
 			Files::LogError("Warning: phrase \"" + it.first + "\" is referred to, but never defined.");
@@ -564,7 +564,7 @@ void GameData::Change(const DataNode &node)
 		governments.Get(node.Token(1))->Load(node);
 	else if(node.Token(0) == "outfitter" && node.Size() >= 2)
 		outfitSales.Get(node.Token(1))->Load(node, outfits);
-	else if(node.Token(0) == "bodymodter" && node.Size() >= 2)
+	else if(node.Token(0) == "bodymodder" && node.Size() >= 2)
 		bodymodSales.Get(node.Token(1))->Load(node, bodymods);
 	else if(node.Token(0) == "planet" && node.Size() >= 2)
 		planets.Get(node.Token(1))->Load(node);
@@ -703,6 +703,12 @@ const Set<Sale<Outfit>> &GameData::Outfitters()
 {
 	return outfitSales;
 }
+
+const Set<Sale<Bodymod>> &GameData::Bodymodders()
+{
+	return bodymodSales;
+}
+
 
 
 
@@ -998,7 +1004,7 @@ void GameData::LoadFile(const string &path, bool debugMode)
 			bodymods.Get(node.Token(1))->Load(node);
 		else if(key == "outfitter" && node.Size() >= 2)
 			outfitSales.Get(node.Token(1))->Load(node, outfits);
-		else if(key == "bodymodter" && node.Size() >= 2)
+		else if(key == "bodymodder" && node.Size() >= 2)
 			bodymodSales.Get(node.Token(1))->Load(node, bodymods);
 		else if(key == "person" && node.Size() >= 2)
 			persons.Get(node.Token(1))->Load(node);

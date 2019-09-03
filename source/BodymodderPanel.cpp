@@ -85,6 +85,16 @@ int BodymodderPanel::TileSize() const
 }
 
 
+int BodymodderPanel::DrawPlayerShipInfo(const Point &point)
+{
+//	shipInfo.Update(*playerShip, player.FleetDepreciation(), day);
+//	shipInfo.DrawAttributes(point);
+//
+//	return shipInfo.AttributesHeight();
+	return 0;
+}
+
+
 
 int BodymodderPanel::DrawPlayerSuitInfo(const Point &point)
 {

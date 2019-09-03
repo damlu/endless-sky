@@ -121,6 +121,7 @@ protected:
 	
 protected:
 	PlayerInfo &player;
+	std::string panelType;
 	// Remember the current day, for calculating depreciation.
 	int day;
 	const Planet *planet = nullptr;

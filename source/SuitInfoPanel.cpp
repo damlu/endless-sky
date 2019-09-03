@@ -272,7 +272,7 @@ void SuitInfoPanel::DrawBodymods(const Rectangle &bounds)
 	Point start = bounds.TopLeft() + Point(10., 8.);
 	table.DrawAt(start);
 	
-	// Draw the bodymods in the same order used in the bodymodter.
+	// Draw the bodymods in the same order used in the bodymodder.
 	for(const string &category : Bodymod::CATEGORIES)
 	{
 		auto it = bodymods.find(category);

@@ -120,7 +120,7 @@ const vector<string> &Bodymod::Licenses() const
 
 
 
-// Get the image to display in the bodymodter when buying this item.
+// Get the image to display in the bodymodder when buying this item.
 const Sprite *Bodymod::Thumbnail() const
 {
 	return thumbnail;

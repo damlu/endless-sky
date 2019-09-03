@@ -61,6 +61,7 @@ ShopPanel::ShopPanel(PlayerInfo &player, string type)
 	),
 	collapsed(player.Collapsed(type))
 {
+	panelType = type;
 	if(playerShip)
 		playerShips.insert(playerShip);
 	if(playerSuit)
@@ -188,148 +189,152 @@ void ShopPanel::DrawSidebar()
 	
 	// Draw this string, centered in the side panel:
 	static const string YOURS = "Your Ships:";
-	Point yoursPoint(
-		Screen::Right() - SIDE_WIDTH / 2 - font.Width(YOURS) / 2,
-		Screen::Top() + 10 - sideScroll);
-	font.Draw(YOURS, yoursPoint, bright);
-	
-	// Start below the "Your Ships" label, and draw them.
-	Point point(
-		Screen::Right() - SIDE_WIDTH / 2 - 93,
-		Screen::Top() + SIDE_WIDTH / 2 - sideScroll + 40 - 93);
-	
-	int shipsHere = 0;
-	for(const shared_ptr<Ship> &ship : player.Ships())
-		shipsHere += !(ship->GetSystem() != player.GetSystem() || ship->IsDisabled());
-	if(shipsHere < 4)
-		point.X() += .5 * ICON_TILE * (4 - shipsHere);
+	static const string YOURSUITS = "Your Suits:";
+	static const Color selected(.8f, 1.f);
+	static const Color unselected(.4f, 1.f);
 
-//	// Draw this string, centered in the side panel:
-//	static const string YOURSUITS = "Your Suits:";
-//	Point yoursPoint(
-//			Screen::Right() - SIDE_WIDTH / 2 - font.Width(YOURSUITS) / 2,
-//			Screen::Top() + 10 - sideScroll);
-//	font.Draw(YOURSUITS, yoursPoint, bright);
-//
-//	// Start below the "Your Suits" label, and draw them.
-//	Point point(
-//			Screen::Right() - SIDE_WIDTH / 2 - 93,
-//			Screen::Top() + SIDE_WIDTH / 2 - sideScroll + 40 - 93);
-	
-	// Check whether flight check tooltips should be shown.
+	// Start below the "Your ____" label, and draw them.
+	Point point(
+			Screen::Right() - SIDE_WIDTH / 2 - 93,
+			Screen::Top() + SIDE_WIDTH / 2 - sideScroll + 40 - 93);
+
 	Point mouse = GetUI()->GetMouse();
 	warningType.clear();
 	
-	static const Color selected(.8f, 1.f);
-	static const Color unselected(.4f, 1.f);
-	for(const shared_ptr<Ship> &ship : player.Ships())
-	{
-		// Skip any ships that are "absent" for whatever reason.
-		if(ship->GetSystem() != player.GetSystem() || ship->IsDisabled())
-			continue;
-	
-		if(point.X() > Screen::Right())
+	if(panelType == "suityard" || panelType == "bodymodder") {
+		Point yoursPoint(
+				Screen::Right() - SIDE_WIDTH / 2 - font.Width(YOURSUITS) / 2,
+				Screen::Top() + 10 - sideScroll);
+		font.Draw(YOURSUITS, yoursPoint, bright);
+
+
+		int suitsHere = 0;
+		for(const shared_ptr<Suit> &suit : player.Suits())
+			suitsHere ++;
+		if(suitsHere < 4)
+			point.X() += .5 * ICON_TILE * (4 - suitsHere);
+
+		for(const shared_ptr<Suit> &suit : player.Suits())
 		{
-			point.X() -= ICON_TILE * ICON_COLS;
-			point.Y() += ICON_TILE;
-		}
-		
-		bool isSelected = playerShips.count(ship.get());
-		const Sprite *background = SpriteSet::Get(isSelected ? "ui/icon selected" : "ui/icon unselected");
-		SpriteShader::Draw(background, point);
-		// If this is one of the selected ships, check if the currently hovered
-		// button (if any) applies to it. If so, brighten the background.
-		if(isSelected && ShouldHighlight(ship.get()))
-			SpriteShader::Draw(background, point);
-		
-		const Sprite *sprite = ship->GetSprite();
-		if(sprite)
-		{
-			float scale = ICON_SIZE / max(sprite->Width(), sprite->Height());
-			Point size(sprite->Width() * scale, sprite->Height() * scale);
-			OutlineShader::Draw(sprite, point, size, isSelected ? selected : unselected);
-		}
-		
-		zones.emplace_back(point, Point(ICON_TILE, ICON_TILE), ship.get());
-		
-		string check = ship->FlightCheck();
-		if(!check.empty())
-		{
-			const Sprite *icon = SpriteSet::Get(check.back() == '!' ? "ui/error" : "ui/warning");
-			SpriteShader::Draw(icon, point + .5 * Point(ICON_TILE - icon->Width(), ICON_TILE - icon->Height()));
-			if(zones.back().Contains(mouse))
+
+			if(point.X() > Screen::Right())
 			{
-				warningType = check;
-				warningPoint = zones.back().TopLeft();
+				point.X() -= ICON_TILE * ICON_COLS;
+				point.Y() += ICON_TILE;
 			}
-		}
-		
-		point.X() += ICON_TILE;
-	}
-	point.Y() += ICON_TILE;
 
-	for(const shared_ptr<Suit> &suit : player.Suits())
-	{
-
-		if(point.X() > Screen::Right())
-		{
-			point.X() -= ICON_TILE * ICON_COLS;
-			point.Y() += ICON_TILE;
-		}
-
-		bool isSelected = playerSuits.count(suit.get());
-		const Sprite *background = SpriteSet::Get(isSelected ? "ui/icon selected" : "ui/icon unselected");
-		SpriteShader::Draw(background, point);
-		// If this is one of the selected suits, check if the currently hovered
-		// button (if any) applies to it. If so, brighten the background.
-		if(isSelected && ShouldHighlight(suit.get()))
+			bool isSelected = playerSuits.count(suit.get());
+			const Sprite *background = SpriteSet::Get(isSelected ? "ui/icon selected" : "ui/icon unselected");
 			SpriteShader::Draw(background, point);
+			// If this is one of the selected suits, check if the currently hovered
+			// button (if any) applies to it. If so, brighten the background.
+			if(isSelected && ShouldHighlight(suit.get()))
+				SpriteShader::Draw(background, point);
 
-		const Sprite *sprite = suit->GetSprite();
-		if(sprite)
-		{
-			float scale = ICON_SIZE / max(sprite->Width(), sprite->Height());
-			Point size(sprite->Width() * scale, sprite->Height() * scale);
-			OutlineShader::Draw(sprite, point, size, isSelected ? selected : unselected);
+			const Sprite *sprite = suit->GetSprite();
+			if(sprite)
+			{
+				float scale = ICON_SIZE / max(sprite->Width(), sprite->Height());
+				Point size(sprite->Width() * scale, sprite->Height() * scale);
+				OutlineShader::Draw(sprite, point, size, isSelected ? selected : unselected);
+			}
+
+			zones.emplace_back(point, Point(ICON_TILE, ICON_TILE), suit.get());
+
+			point.X() += ICON_TILE;
 		}
+		point.Y() += ICON_TILE;
 
-		zones.emplace_back(point, Point(ICON_TILE, ICON_TILE), suit.get());
+		if(playerSuit)
+		{
+			point.Y() += SUIT_SIZE / 2;
+			point.X() = Screen::Right() - SIDE_WIDTH / 2;
+			DrawSuit(*playerSuit, point, true);
 
-		point.X() += ICON_TILE;
-	}
-	point.Y() += ICON_TILE;
-	
-	if(playerShip)
-	{
-		point.Y() += SHIP_SIZE / 2;
-		point.X() = Screen::Right() - SIDE_WIDTH / 2;
-		DrawShip(*playerShip, point, true);
-		
-		Point offset(SIDE_WIDTH / -2, SHIP_SIZE / 2);
-		sideDetailHeight = DrawPlayerShipInfo(point + offset);
-		point.Y() += sideDetailHeight + SHIP_SIZE / 2;
-	}
-	else if(player.Cargo().Size())
-	{
-		point.X() = Screen::Right() - SIDE_WIDTH + 10;
-		font.Draw("cargo space:", point, medium);
-		
-		string space = Format::Number(player.Cargo().Free()) + " / " + Format::Number(player.Cargo().Size());
-		Point right(Screen::Right() - font.Width(space) - 10, point.Y());
-		font.Draw(space, right, bright);
-		point.Y() += 20.;
+			Point offset(SIDE_WIDTH / -2, SUIT_SIZE / 2);
+			sideDetailHeight = DrawPlayerSuitInfo(point + offset);
+			point.Y() += sideDetailHeight + SUIT_SIZE / 2;
+		}
+	} else {
+		Point yoursPoint(
+				Screen::Right() - SIDE_WIDTH / 2 - font.Width(YOURS) / 2,
+				Screen::Top() + 10 - sideScroll);
+		font.Draw(YOURS, yoursPoint, bright);
+
+		int shipsHere = 0;
+		for(const shared_ptr<Ship> &ship : player.Ships())
+			shipsHere += !(ship->GetSystem() != player.GetSystem() || ship->IsDisabled());
+		if(shipsHere < 4)
+			point.X() += .5 * ICON_TILE * (4 - shipsHere);
+
+		for(const shared_ptr<Ship> &ship : player.Ships())
+		{
+			// Skip any ships that are "absent" for whatever reason.
+			if(ship->GetSystem() != player.GetSystem() || ship->IsDisabled())
+				continue;
+
+			if(point.X() > Screen::Right())
+			{
+				point.X() -= ICON_TILE * ICON_COLS;
+				point.Y() += ICON_TILE;
+			}
+
+			bool isSelected = playerShips.count(ship.get());
+			const Sprite *background = SpriteSet::Get(isSelected ? "ui/icon selected" : "ui/icon unselected");
+			SpriteShader::Draw(background, point);
+			// If this is one of the selected ships, check if the currently hovered
+			// button (if any) applies to it. If so, brighten the background.
+			if(isSelected && ShouldHighlight(ship.get()))
+				SpriteShader::Draw(background, point);
+
+			const Sprite *sprite = ship->GetSprite();
+			if(sprite)
+			{
+				float scale = ICON_SIZE / max(sprite->Width(), sprite->Height());
+				Point size(sprite->Width() * scale, sprite->Height() * scale);
+				OutlineShader::Draw(sprite, point, size, isSelected ? selected : unselected);
+			}
+
+			zones.emplace_back(point, Point(ICON_TILE, ICON_TILE), ship.get());
+
+			string check = ship->FlightCheck();
+			if(!check.empty())
+			{
+				const Sprite *icon = SpriteSet::Get(check.back() == '!' ? "ui/error" : "ui/warning");
+				SpriteShader::Draw(icon, point + .5 * Point(ICON_TILE - icon->Width(), ICON_TILE - icon->Height()));
+				if(zones.back().Contains(mouse))
+				{
+					warningType = check;
+					warningPoint = zones.back().TopLeft();
+				}
+			}
+
+			point.X() += ICON_TILE;
+		}
+		point.Y() += ICON_TILE;
+
+		if(playerShip)
+		{
+			point.Y() += SHIP_SIZE / 2;
+			point.X() = Screen::Right() - SIDE_WIDTH / 2;
+			DrawShip(*playerShip, point, true);
+
+			Point offset(SIDE_WIDTH / -2, SHIP_SIZE / 2);
+			sideDetailHeight = DrawPlayerShipInfo(point + offset);
+			point.Y() += sideDetailHeight + SHIP_SIZE / 2;
+		}
+		else if(player.Cargo().Size())
+		{
+			point.X() = Screen::Right() - SIDE_WIDTH + 10;
+			font.Draw("cargo space:", point, medium);
+
+			string space = Format::Number(player.Cargo().Free()) + " / " + Format::Number(player.Cargo().Size());
+			Point right(Screen::Right() - font.Width(space) - 10, point.Y());
+			font.Draw(space, right, bright);
+			point.Y() += 20.;
+		}
 	}
 
-	if(playerSuit)
-	{
-		point.Y() += SUIT_SIZE / 2;
-		point.X() = Screen::Right() - SIDE_WIDTH / 2;
-		DrawSuit(*playerSuit, point, true);
-
-		Point offset(SIDE_WIDTH / -2, SUIT_SIZE / 2);
-		sideDetailHeight = DrawPlayerSuitInfo(point + offset);
-		point.Y() += sideDetailHeight + SUIT_SIZE / 2;
-	}
 
 	maxSideScroll = max(0., point.Y() + sideScroll - Screen::Bottom() + BUTTON_HEIGHT);
 	
@@ -943,12 +948,12 @@ int64_t ShopPanel::LicenseCost(const Bodymod *bodymod) const
 {
 	return 0;
 //	// Don't require a license for an bodymod that you have in cargo or that you
-//	// just sold to the bodymodter. (Otherwise, there would be no way to transfer
+//	// just sold to the bodymodder. (Otherwise, there would be no way to transfer
 //	// a restricted plundered bodymod between ships or from cargo to a ship.)
 //	if(player.Cargo().Get(bodymod) || player.Stock(bodymod) > 0)
 //		return 0;
 //
-//	const Sale<Bodymod> &available = player.GetPlanet()->Bodymodter();
+//	const Sale<Bodymod> &available = player.GetPlanet()->Bodymodder();
 //
 //	int64_t cost = 0;
 //	for(const string &name : bodymod->Licenses())

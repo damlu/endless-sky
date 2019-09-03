@@ -161,10 +161,10 @@ void SuitInfoDisplay::UpdateAttributes(const Suit &suit, const Depreciation &dep
 //		attributeValues.push_back(Format::Number(attributes.Get("hull")));
 //	}
 	attributesHeight += 20;
-	double emptyMass = suit.Mass();
-	attributeLabels.push_back(isGeneric ? "mass with no cargo:" : "mass:");
-	attributeValues.push_back(Format::Number(emptyMass));
-	attributesHeight += 20;
+//	double emptyMass = suit.Mass();
+//	attributeLabels.push_back(isGeneric ? "mass with no cargo:" : "mass:");
+//	attributeValues.push_back(Format::Number(emptyMass));
+//	attributesHeight += 20;
 //	attributeLabels.push_back(isGeneric ? "cargo space:" : "cargo:");
 //	if(isGeneric)
 //		attributeValues.push_back(Format::Number(attributes.Get("cargo space")));
