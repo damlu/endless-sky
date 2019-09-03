@@ -55,7 +55,7 @@ ShopPanel::ShopPanel(PlayerInfo &player, string type)
 	playerSuit(player.Flagsuit()),
 	categories(
 		type == "outfitter" ? Outfit::CATEGORIES
-		: type == "outfitter" ? Ship::CATEGORIES
+		: type == "ship" ? Ship::CATEGORIES
 		: type == "bodymodder" ? Bodymod::CATEGORIES
 		: Suit::CATEGORIES
 	),
@@ -835,8 +835,25 @@ bool ShopPanel::Click(int x, int y, int clicks)
 				
 				selectedShip = zone.GetShip();
 			}
-			else
+			else if (zone.GetOutfit()) {
 				selectedOutfit = zone.GetOutfit();
+			}
+			else if(zone.GetSuit())
+			{
+				// Is the suit that was clicked one of the player's?
+				for(const shared_ptr<Suit> &suit : player.Suits())
+					if(suit.get() == zone.GetSuit())
+					{
+						dragSuit = suit.get();
+						dragPoint.Set(x, y);
+						SideSelect(dragSuit);
+						return true;
+					}
+
+				selectedSuit = zone.GetSuit();
+			}
+			else
+				selectedBodymod = zone.GetBodymod();
 			
 			// Scroll details into view in Step() when the height is known.
 			scrollDetailsIntoView = true;
@@ -894,6 +911,26 @@ bool ShopPanel::Drag(double dx, double dy)
 					if(dragIndex >= 0 && dropIndex >= 0)
 						player.ReorderShip(dragIndex, dropIndex);
 				}
+	} else if(dragSuit)
+	{
+		dragPoint += Point(dx, dy);
+		for(const Zone &zone : zones)
+			if(zone.Contains(dragPoint))
+				if(zone.GetSuit() && zone.GetSuit()->IsYours() && zone.GetSuit() != dragSuit)
+				{
+					int dragIndex = -1;
+					int dropIndex = -1;
+					for(unsigned i = 0; i < player.Suits().size(); ++i)
+					{
+						const Suit *suit = &*player.Suits()[i];
+						if(suit == dragSuit)
+							dragIndex = i;
+						if(suit == zone.GetSuit())
+							dropIndex = i;
+					}
+					if(dragIndex >= 0 && dropIndex >= 0)
+						player.ReorderSuit(dragIndex, dropIndex);
+				}
 	}
 	else
 	{
@@ -909,6 +946,7 @@ bool ShopPanel::Drag(double dx, double dy)
 bool ShopPanel::Release(int x, int y)
 {
 	dragShip = nullptr;
+	dragSuit = nullptr;
 	return true;
 }
 

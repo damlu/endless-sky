@@ -11,5 +11,5 @@ bodymod "Big ol' Dick"
 	plural "Big 'ol Dicks"
 	category "Systems"
 	cost 1000
-	thumbnail "outfit/big ol dick"
+	thumbnail "bodymod/big ol dick"
 	description "It's a big ol' donger."

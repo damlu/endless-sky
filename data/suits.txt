@@ -10,16 +10,27 @@
 
 
 
-suit "Albatross"
-	plural "Albatrosses"
-	sprite "suit/albatross"
-	thumbnail "thumbnail/albatross"
+suit "Albadong"
+	plural "Albadongs"
+	sprite "suit/albadong"
+	thumbnail "thumbnail/albadong"
 	attributes
 		category "Heavy Warsuit"
-		licenses
-			"Remnant Capital"
 		cost 20000000
 		"bodymod space" 658
 	bodymods
 		"Big ol' Dick" 5
+
 	description "Once they left human space, it became apparent to the Remnant that they would need to build their own suityards in order to defend themselves if they were discovered by the Alphas or any other unfriendly faction. Using new composite materials that they discovered, they built suits very different from anything seen in human space."
+
+suit "Suit 2"
+	sprite "suit/star barge"
+	thumbnail "thumbnail/star barge"
+	attributes
+		category "Light Freighter"
+		"cost" 190000
+		"bodymod space" 130
+	bodymods
+		"Big ol' Dick" 1
+	description "The Syndicate CT-50 Star Barge is little more than a cluster of cargo containers with an engine at one end and a cockpit on the other. It is a slow and ugly suit, but it can carry enough cargo to earn its captain a steady income even in parts of the galaxy where it is hard to find passengers to carry or courier missions."
+	description "	Because they often carry valuable cargo, and because they are too slow to evade any attackers, Star Barges are a common target of pirates."

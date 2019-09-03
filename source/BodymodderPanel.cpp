@@ -64,8 +64,8 @@ BodymodderPanel::BodymodderPanel(PlayerInfo &player)
 				catalog[bodymod->Category()].insert(name);
 		}
 	
-//	if(player.GetPlanet())
-//		bodymodder = player.GetPlanet()->Bodymodder();
+	if(player.GetPlanet())
+		bodymodder = player.GetPlanet()->Bodymodder();
 }
 
 

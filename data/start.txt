@@ -20,9 +20,9 @@ start
 			interest 0.004
 			term 365
 	set "license: Pilot's"
-	suit "Albatross"
+	suit "Albadong"
 		name "Dongerface"
-		sprite "suit/albatross"
+		sprite "suit/albadong"
 		attributes
 			category "Heavy Warsuit"
 			cost 20000000

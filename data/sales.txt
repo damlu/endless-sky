@@ -431,8 +431,11 @@ outfitter "Stack Core"
 outfitter "Nuke"
 	"Nuclear Missile"
 
-suityard "Basic Suits"
-	"Albatross"
 
 bodymodder "Basic Bodymods"
 	"Big ol' Dick"
+
+
+suityard "Basic Suits"
+	"Albadong"
+	"Suit 2"

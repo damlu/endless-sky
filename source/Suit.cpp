@@ -218,7 +218,8 @@ void Suit::FinishLoading(bool isNewInstance)
 	
 	// Issue warnings if this suit has negative bodymod, cargo, weapon, or engine capacity.
 	string warning;
-	for(const string &attr : set<string>{"bodymod space", "cargo space", "weapon capacity", "engine capacity"})
+	// for(const string &attr : set<string>{"bodymod space", "cargo space", "weapon capacity", "engine capacity"})
+	for(const string &attr : set<string>{"bodymod space"})
 	{
 		double val = attributes.Get(attr);
 		if(val < 0)

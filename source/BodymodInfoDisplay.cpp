@@ -27,49 +27,49 @@ using namespace std;
 
 namespace {
 	const map<string, double> SCALE = {
-		{"active cooling", 60.},
-		{"afterburner energy", 60.},
-		{"afterburner fuel", 60.},
-		{"afterburner heat", 60.},
-		{"cloak", 60.},
-		{"cloaking energy", 60.},
-		{"cloaking fuel", 60.},
-		{"cloaking heat", 60.},
-		{"cooling", 60.},
-		{"cooling energy", 60.},
-		{"energy consumption", 60.},
-		{"energy generation", 60.},
-		{"fuel consumption", 60.},
-		{"fuel energy", 60.},
-		{"fuel generation", 60.},
-		{"fuel heat", 60.},
-		{"heat generation", 60.},
-		{"heat dissipation", 60.},
-		{"hull repair rate", 60.},
-		{"hull energy", 60.},
-		{"hull fuel", 60.},
-		{"hull heat", 60.},
-		{"jump speed", 60.},
-		{"reverse thrusting energy", 60.},
-		{"reverse thrusting heat", 60.},
-		{"shield generation", 60.},
-		{"shield energy", 60.},
-		{"shield fuel", 60.},
-		{"shield heat", 60.},
-		{"solar collection", 60.},
-		{"thrusting energy", 60.},
-		{"thrusting heat", 60.},
-		{"turn", 60.},
-		{"turning energy", 60.},
-		{"turning heat", 60.},
-		
-		{"thrust", 60. * 60.},
-		{"reverse thrust", 60. * 60.},
-		{"afterburner thrust", 60. * 60.},
-		
-		{"ion resistance", 60. * 100.},
-		{"disruption resistance", 60. * 100.},
-		{"slowing resistance", 60. * 100.}
+//		{"active cooling", 60.},
+//		{"afterburner energy", 60.},
+//		{"afterburner fuel", 60.},
+//		{"afterburner heat", 60.},
+//		{"cloak", 60.},
+//		{"cloaking energy", 60.},
+//		{"cloaking fuel", 60.},
+//		{"cloaking heat", 60.},
+//		{"cooling", 60.},
+//		{"cooling energy", 60.},
+//		{"energy consumption", 60.},
+//		{"energy generation", 60.},
+//		{"fuel consumption", 60.},
+//		{"fuel energy", 60.},
+//		{"fuel generation", 60.},
+//		{"fuel heat", 60.},
+//		{"heat generation", 60.},
+//		{"heat dissipation", 60.},
+//		{"hull repair rate", 60.},
+//		{"hull energy", 60.},
+//		{"hull fuel", 60.},
+//		{"hull heat", 60.},
+//		{"jump speed", 60.},
+//		{"reverse thrusting energy", 60.},
+//		{"reverse thrusting heat", 60.},
+//		{"shield generation", 60.},
+//		{"shield energy", 60.},
+//		{"shield fuel", 60.},
+//		{"shield heat", 60.},
+//		{"solar collection", 60.},
+//		{"thrusting energy", 60.},
+//		{"thrusting heat", 60.},
+//		{"turn", 60.},
+//		{"turning energy", 60.},
+//		{"turning heat", 60.},
+//
+//		{"thrust", 60. * 60.},
+//		{"reverse thrust", 60. * 60.},
+//		{"afterburner thrust", 60. * 60.},
+//
+//		{"ion resistance", 60. * 100.},
+//		{"disruption resistance", 60. * 100.},
+//		{"slowing resistance", 60. * 100.}
 	};
 	
 	const map<string, string> BOOLEAN_ATTRIBUTES = {
@@ -159,14 +159,18 @@ void BodymodInfoDisplay::UpdateRequirements(const Bodymod &bodymod, const Player
 	}
 	
 	bool hasContent = true;
+//	static const vector<string> NAMES = {
+//		"", "",
+//		"bodymod space needed:", "bodymod space",
+//		"weapon capacity needed:", "weapon capacity",
+//		"engine capacity needed:", "engine capacity",
+//		"", "",
+//		"gun ports needed:", "gun ports",
+//		"turret mounts needed:", "turret mounts"
+//	};
 	static const vector<string> NAMES = {
-		"", "",
-		"bodymod space needed:", "bodymod space",
-		"weapon capacity needed:", "weapon capacity",
-		"engine capacity needed:", "engine capacity",
-		"", "",
-		"gun ports needed:", "gun ports",
-		"turret mounts needed:", "turret mounts"
+			"", "",
+			"bodymod space needed:", "bodymod space"
 	};
 	for(unsigned i = 0; i + 1 < NAMES.size(); i += 2)
 	{
@@ -198,8 +202,11 @@ void BodymodInfoDisplay::UpdateAttributes(const Bodymod &bodymod)
 	bool hasNormalAttributes = false;
 	for(const pair<const char *, double> &it : bodymod.Attributes())
 	{
+//		static const set<string> SKIP = {
+//			"bodymod space", "weapon capacity", "engine capacity", "gun ports", "turret mounts"
+//		};
 		static const set<string> SKIP = {
-			"bodymod space", "weapon capacity", "engine capacity", "gun ports", "turret mounts"
+				"bodymod space"
 		};
 		if(SKIP.count(it.first))
 			continue;
@@ -245,135 +252,141 @@ void BodymodInfoDisplay::UpdateAttributes(const Bodymod &bodymod)
 	attributeValues.emplace_back(Format::Number(bodymod.Range()));
 	attributesHeight += 20;
 	
+//	static const vector<string> VALUE_NAMES = {
+//		"shield damage",
+//		"hull damage",
+//		"fuel damage",
+//		"heat damage",
+//		"ion damage",
+//		"slowing damage",
+//		"disruption damage",
+//		"firing energy",
+//		"firing heat",
+//		"firing fuel"
+//	};
+//
+//	vector<double> values = {
+//		bodymod.ShieldDamage(),
+//		bodymod.HullDamage(),
+//		bodymod.FuelDamage(),
+//		bodymod.HeatDamage(),
+//		bodymod.IonDamage() * 100.,
+//		bodymod.SlowingDamage() * 100.,
+//		bodymod.DisruptionDamage() * 100.,
+//		bodymod.FiringEnergy(),
+//		bodymod.FiringHeat(),
+//		bodymod.FiringFuel()
+//	};
+
 	static const vector<string> VALUE_NAMES = {
-		"shield damage",
-		"hull damage",
-		"fuel damage",
-		"heat damage",
-		"ion damage",
-		"slowing damage",
-		"disruption damage",
-		"firing energy",
-		"firing heat",
-		"firing fuel"
 	};
-	
+
 	vector<double> values = {
-		bodymod.ShieldDamage(),
-		bodymod.HullDamage(),
-		bodymod.FuelDamage(),
-		bodymod.HeatDamage(),
-		bodymod.IonDamage() * 100.,
-		bodymod.SlowingDamage() * 100.,
-		bodymod.DisruptionDamage() * 100.,
-		bodymod.FiringEnergy(),
-		bodymod.FiringHeat(),
-		bodymod.FiringFuel()
 	};
 	
 	// Add any per-second values to the table.
-	double reload = bodymod.Reload();
-	if(reload)
-	{
-		static const string PER_SECOND = " / second:";
-		for(unsigned i = 0; i < values.size(); ++i)
-			if(values[i])
-			{
-				attributeLabels.emplace_back(VALUE_NAMES[i] + PER_SECOND);
-				attributeValues.emplace_back(Format::Number(60. * values[i] / reload));
-				attributesHeight += 20;
-			}
-	}
-	
-	bool isContinuous = (reload <= 1);
-	attributeLabels.emplace_back("shots / second:");
-	if(isContinuous)
-		attributeValues.emplace_back("continuous");
-	else
-		attributeValues.emplace_back(Format::Number(60. / reload));
-	attributesHeight += 20;
-	
-	double turretTurn = bodymod.TurretTurn() * 60.;
-	if(turretTurn)
-	{
-		attributeLabels.emplace_back("turret turn rate:");
-		attributeValues.emplace_back(Format::Number(turretTurn));
-		attributesHeight += 20;
-	}
-	int homing = bodymod.Homing();
-	if(homing)
-	{
-		static const string skill[] = {
-			"none",
-			"poor",
-			"fair",
-			"good",
-			"excellent"
-		};
-		attributeLabels.emplace_back("homing:");
-		attributeValues.push_back(skill[max(0, min(4, homing))]);
-		attributesHeight += 20;
-	}
-	static const vector<string> PERCENT_NAMES = {
-		"tracking:",
-		"optical tracking:",
-		"infrared tracking:",
-		"radar tracking:",
-		"piercing:"
-	};
-	vector<double> percentValues = {
-		bodymod.Tracking(),
-		bodymod.OpticalTracking(),
-		bodymod.InfraredTracking(),
-		bodymod.RadarTracking(),
-		bodymod.Piercing()
-	};
-	for(unsigned i = 0; i < PERCENT_NAMES.size(); ++i)
-		if(percentValues[i])
-		{
-			int percent = lround(100. * percentValues[i]);
-			attributeLabels.push_back(PERCENT_NAMES[i]);
-			attributeValues.push_back(Format::Number(percent) + "%");
-			attributesHeight += 20;
-		}
-	
-	// Pad the table.
-	attributeLabels.emplace_back();
-	attributeValues.emplace_back();
-	attributesHeight += 10;
-	
-	// Add per-shot values to the table. If the weapon fires continuously,
-	// the values have already been added.
-	if(!isContinuous)
-	{
-		static const string PER_SHOT = " / shot:";
-		for(unsigned i = 0; i < VALUE_NAMES.size(); ++i)
-			if(values[i])
-			{
-				attributeLabels.emplace_back(VALUE_NAMES[i] + PER_SHOT);
-				attributeValues.emplace_back(Format::Number(values[i]));
-				attributesHeight += 20;
-			}
-	}
-	
-	static const vector<string> OTHER_NAMES = {
-		"inaccuracy:",
-		"blast radius:",
-		"missile strength:",
-		"anti-missile:"
-	};
-	vector<double> otherValues = {
-		bodymod.Inaccuracy(),
-		bodymod.BlastRadius(),
-		static_cast<double>(bodymod.MissileStrength()),
-		static_cast<double>(bodymod.AntiMissile())
-	};
-	
-	for(unsigned i = 0; i < OTHER_NAMES.size(); ++i)
-		if(otherValues[i])
-		{
-			attributeLabels.emplace_back(OTHER_NAMES[i]);
-			attributeValues.emplace_back(Format::Number(otherValues[i]));
-			attributesHeight += 20;
-		}
+//	double reload = bodymod.Reload();
+//	if(reload)
+//	{
+//		static const string PER_SECOND = " / second:";
+//		for(unsigned i = 0; i < values.size(); ++i)
+//			if(values[i])
+//			{
+//				attributeLabels.emplace_back(VALUE_NAMES[i] + PER_SECOND);
+//				attributeValues.emplace_back(Format::Number(60. * values[i] / reload));
+//				attributesHeight += 20;
+//			}
+//	}
+//
+//	bool isContinuous = (reload <= 1);
+//	attributeLabels.emplace_back("shots / second:");
+//	if(isContinuous)
+//		attributeValues.emplace_back("continuous");
+//	else
+//		attributeValues.emplace_back(Format::Number(60. / reload));
+//	attributesHeight += 20;
+//
+//	double turretTurn = bodymod.TurretTurn() * 60.;
+//	if(turretTurn)
+//	{
+//		attributeLabels.emplace_back("turret turn rate:");
+//		attributeValues.emplace_back(Format::Number(turretTurn));
+//		attributesHeight += 20;
+//	}
+//	int homing = bodymod.Homing();
+//	if(homing)
+//	{
+//		static const string skill[] = {
+//			"none",
+//			"poor",
+//			"fair",
+//			"good",
+//			"excellent"
+//		};
+//		attributeLabels.emplace_back("homing:");
+//		attributeValues.push_back(skill[max(0, min(4, homing))]);
+//		attributesHeight += 20;
+//	}
+//	static const vector<string> PERCENT_NAMES = {
+//		"tracking:",
+//		"optical tracking:",
+//		"infrared tracking:",
+//		"radar tracking:",
+//		"piercing:"
+//	};
+//	vector<double> percentValues = {
+//		bodymod.Tracking(),
+//		bodymod.OpticalTracking(),
+//		bodymod.InfraredTracking(),
+//		bodymod.RadarTracking(),
+//		bodymod.Piercing()
+//	};
+//	for(unsigned i = 0; i < PERCENT_NAMES.size(); ++i)
+//		if(percentValues[i])
+//		{
+//			int percent = lround(100. * percentValues[i]);
+//			attributeLabels.push_back(PERCENT_NAMES[i]);
+//			attributeValues.push_back(Format::Number(percent) + "%");
+//			attributesHeight += 20;
+//		}
+//
+//	// Pad the table.
+//	attributeLabels.emplace_back();
+//	attributeValues.emplace_back();
+//	attributesHeight += 10;
+//
+//	// Add per-shot values to the table. If the weapon fires continuously,
+//	// the values have already been added.
+//	if(!isContinuous)
+//	{
+//		static const string PER_SHOT = " / shot:";
+//		for(unsigned i = 0; i < VALUE_NAMES.size(); ++i)
+//			if(values[i])
+//			{
+//				attributeLabels.emplace_back(VALUE_NAMES[i] + PER_SHOT);
+//				attributeValues.emplace_back(Format::Number(values[i]));
+//				attributesHeight += 20;
+//			}
+//	}
+//
+//	static const vector<string> OTHER_NAMES = {
+//		"inaccuracy:",
+//		"blast radius:",
+//		"missile strength:",
+//		"anti-missile:"
+//	};
+//	vector<double> otherValues = {
+//		bodymod.Inaccuracy(),
+//		bodymod.BlastRadius(),
+//		static_cast<double>(bodymod.MissileStrength()),
+//		static_cast<double>(bodymod.AntiMissile())
+//	};
+//
+//	for(unsigned i = 0; i < OTHER_NAMES.size(); ++i)
+//		if(otherValues[i])
+//		{
+//			attributeLabels.emplace_back(OTHER_NAMES[i]);
+//			attributeValues.emplace_back(Format::Number(otherValues[i]));
+//			attributesHeight += 20;
+//		}
 }

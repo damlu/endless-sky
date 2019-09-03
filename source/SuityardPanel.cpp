@@ -92,10 +92,11 @@ int SuityardPanel::TileSize() const
 
 int SuityardPanel::DrawPlayerShipInfo(const Point &point)
 {
-	shipInfo.Update(*playerShip, player.FleetDepreciation(), day);
-	shipInfo.DrawAttributes(point);
-
-	return shipInfo.AttributesHeight();
+//	shipInfo.Update(*playerShip, player.FleetDepreciation(), day);
+//	shipInfo.DrawAttributes(point);
+//
+//	return shipInfo.AttributesHeight();
+	return 0;
 }
 
 

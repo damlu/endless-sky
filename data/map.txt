@@ -25862,9 +25862,9 @@ planet "New Boston"
 	description `New Boston is a completely unremarkable world... except, of course, for the fact that you happen to have been born here. Most of the land is wet and marshy, and the coastal regions are prone to flooding. Some food crops are grown here, but most of the farmers instead plant flax and jute, which grow well in wet soil and are used to make linen and burlap cloth. The textile mills are hot and poorly ventilated, but they offer higher and more reliable income than farming.`
 	spaceport `Some day New Boston may be a prosperous enough planet to afford a better spaceport, but not yet. Many of the concrete landing pads have sunk into the muddy soil over the years since they were poured, and are now tilted and uneven. The market where ship captains buy and sell cargo is a large tent rather than a permanent building, but it is sturdy enough to keep off the rain, and high enough for loads to be brought in and out by trucks and the occasional hovercraft. And, some enterprising local mechanics have set up not only a repair shop and outfitter, but also a shipyard with several small, refurbished ships for sale.`
 	shipyard "Basic Ships"
-	suityard "Basic Suits"
 	outfitter "Basic Outfits"
 	outfitter "Ammo South"
+	suityard "Basic Suits"
 	bodymodder "Basic Bodymods"
 	security 0.05
 	tribute 300

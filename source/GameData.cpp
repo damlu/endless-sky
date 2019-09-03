@@ -196,8 +196,8 @@ bool GameData::BeginLoad(const char * const *argv)
 	// And, update the ships with the outfits we've now finished loading.
 	for(auto &it : ships)
 		it.second.FinishLoading(true);
-//	for(auto &it : suits)
-//		it.second.FinishLoading(true);
+	for(auto &it : suits)
+		it.second.FinishLoading(true);
 	for(auto &it : persons)
 		it.second.FinishLoading();
 	startConditions.FinishLoading();
@@ -973,7 +973,6 @@ void GameData::LoadFile(const string &path, bool debugMode)
 	DataFile data(path);
 	if(debugMode)
 		Files::LogError("Parsing: " + path);
-	
 	for(const DataNode &node : data)
 	{
 		const string &key = node.Token(0);
