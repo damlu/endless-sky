@@ -71,7 +71,8 @@ void PlanetPanel::Step()
 {
 	// If the previous mission callback resulted in a "launch", take off now.
 	const Ship *flagship = player.Flagship();
-	if(flagship && flagship->CanBeFlagship() && (player.ShouldLaunch() || requestedLaunch))
+	const Suit *flagsuit = player.Flagsuit();
+	if(flagship && flagship->CanBeFlagship() && flagsuit && flagsuit->CanBeFlagsuit() && (player.ShouldLaunch() || requestedLaunch))
 	{
 		TakeOffIfReady();
 		return;
@@ -101,8 +102,15 @@ void PlanetPanel::Draw()
 	info.SetSprite("land", planet.Landscape());
 	
 	const Ship *flagship = player.Flagship();
+	const Suit *flagsuit = player.Flagsuit();
 	if(flagship && flagship->CanBeFlagship())
 		info.SetCondition("has ship");
+
+	if(flagsuit && flagsuit->CanBeFlagsuit())
+		info.SetCondition("has suit");
+
+	if(flagship && flagship->CanBeFlagship() && flagsuit && flagsuit->CanBeFlagsuit())
+		info.SetCondition("has ship and suit");
 	
 	if(planet.CanUseServices())
 	{
@@ -148,9 +156,10 @@ bool PlanetPanel::KeyDown(SDL_Keycode key, Uint16 mod, const Command &command, b
 {
 	Panel *oldPanel = selectedPanel;
 	const Ship *flagship = player.Flagship();
+	const Suit *flagsuit = player.Flagsuit();
 	
 	bool hasAccess = planet.CanUseServices();
-	if(key == 'd' && flagship && flagship->CanBeFlagship())
+	if(key == 'd' && flagship && flagship->CanBeFlagship() && flagsuit && flagsuit->CanBeFlagsuit())
 		requestedLaunch = true;
 	else if(key == 'l')
 	{

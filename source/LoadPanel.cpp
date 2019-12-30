@@ -31,6 +31,7 @@ PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 #include "Preferences.h"
 #include "Rectangle.h"
 #include "ShipyardPanel.h"
+#include "SuityardPanel.h"
 #include "StarField.h"
 #include "UI.h"
 
@@ -427,7 +428,8 @@ void LoadPanel::OnCallback(int)
 	}
 	if(player.Suits().empty())
 	{
-		throw 10;
+		gamePanels.Push(new SuityardPanel(player));
+		gamePanels.StepAll();
 	}
 }
 

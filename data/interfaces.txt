@@ -506,7 +506,7 @@ interface "planet"
 		align right
 		pad 10 0
 
-	visible if "has ship"
+	visible if "has ship and suit"
 	sprite "ui/planet dialog button"
 		center 280 330
 	button d "_Depart"

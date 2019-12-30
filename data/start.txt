@@ -20,12 +20,3 @@ start
 			interest 0.004
 			term 365
 	set "license: Pilot's"
-	suit "Albadong"
-		name "Dongerface"
-		sprite "suit/albadong"
-		attributes
-			category "Heavy Warsuit"
-			cost 20000000
-		bodymods
-			"Big ol' Dick" 3
-		description "Once they left human space, it became apparent to the Remnant that they would need to build their own suityards in order to defend themselves if they were discovered by the Alphas or any other unfriendly faction. Using new composite materials that they discovered, they built suits very different from anything seen in human space."

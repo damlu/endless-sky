@@ -452,7 +452,9 @@ void ShopPanel::DrawMain()
 		for(const string &name : it->second)
 		{
 			bool isSelected = (selectedShip && GameData::Ships().Get(name) == selectedShip)
-				|| (selectedOutfit && GameData::Outfits().Get(name) == selectedOutfit);
+				|| (selectedOutfit && GameData::Outfits().Get(name) == selectedOutfit)
+				|| (selectedSuit && GameData::Suits().Get(name) == selectedSuit)
+				|| (selectedBodymod && GameData::Bodymods().Get(name) == selectedBodymod);
 			
 			if(isSelected)
 				selectedTopY = point.Y() - TILE_SIZE / 2;

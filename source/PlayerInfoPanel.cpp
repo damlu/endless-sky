@@ -508,6 +508,21 @@ void PlayerInfoPanel::DrawPlayer(const Rectangle &bounds)
 		table.Draw(combatRating, dim);
 		table.Draw("(" + to_string(combatLevel) + ")", dim);
 	}
+
+	// Determine the player's sexual reputation.
+	int sexRepLevel = log(max<int64_t>(1, player.GetCondition("sexual reputation")));
+	const string &sexRep = GameData::Rating("sex", sexRepLevel);
+	if(!combatRating.empty())
+	{
+		table.DrawGap(10);
+		table.DrawUnderline(dim);
+		table.Draw("sexual reputation:", bright);
+		table.Advance();
+		table.DrawGap(5);
+
+		table.Draw(sexRep, dim);
+		table.Draw("(" + to_string(sexRepLevel) + ")", dim);
+	}
 	
 	// Display the factors affecting piracy targeting the player.
 	pair<double, double> factors = player.RaidFleetFactors();

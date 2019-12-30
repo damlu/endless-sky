@@ -1,0 +1,50 @@
+# Copyright (c) 2017 by Michael Zahniser
+#
+# Endless Sky is free software: you can redistribute it and/or modify it under the
+# terms of the GNU General Public License as published by the Free Software
+# Foundation, either version 3 of the License, or (at your option) any later version.
+#
+# Endless Sky is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+# PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+
+mission "Sexy Drought Relief"
+	name `Sexy drought relief to <planet>`
+	job
+	repeat
+	description `An elderly widow on <destination> could really use a good fucking to clear her mind. Plow her senseless by <date> for <payment>.`
+	deadline
+	to offer
+		random < 10000
+	source
+		government "Republic"
+	destination
+		distance 1 1
+		attributes "dirt belt"
+	on complete
+		payment 10000 160
+		"sexual reputation" += 10
+		conversation
+			` `
+		conversation
+			`You walk into the spaceport bar where your client had arranged to meet. Scanning the room, you quickly pick her out amongst the exhausted crew and impatient travelers crowding the room. Dressed in something that was probably fashionable some decades ago and nursing a drink nervously, she's the only one fixated on the entrance to the bar. You walk up an introduce yourself, ordering a drink from the auto-waiter as you begin to make small talk. Just as your drink arrives, she interrupts you:`
+			`	 "Look. You're sweet enough, but I've told my life story enough times even my cat is bored of it. What I need is some hard cock in this dusty old cooter! I've paid for an hour in a private sleeping pod, you're late, and time's wasting."`
+			`	With that, she grasps your arm and begins hustling you out the door and towards the closest lift. Too taken aback by her sudden shift of demeanor to do anything else, you abandon your untouched drink and allow yourself to be led to one of the spaceport's upper floors. Little more than a low-ceilinged closet with a single-person bed in it, the sleeping pod doesn't offer much room for maneuvering, but you do the best you can with what you've got.`
+			choice
+				`	"Thing 1"`
+					goto thing1
+				`	"Thing 2"`
+					goto thing2
+
+			label thing1
+			`	"Indeed"`
+				goto end
+
+			label thing2
+			`	"Not so."`
+				goto end
+
+			label end
+			`	"Did it <payment>."`
+
+
