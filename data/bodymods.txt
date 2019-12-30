@@ -12,4 +12,7 @@ bodymod "Big ol' Dick"
 	category "Systems"
 	cost 1000
 	thumbnail "bodymod/big ol dick"
+	"bodymod space" -10
+	"crotch slots" -1
+	"cock count" 1
 	description "It's a big ol' donger."

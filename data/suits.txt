@@ -30,6 +30,12 @@ suit "Suit 2"
 		category "Light Freighter"
 		"cost" 190000
 		"bodymod space" 130
+		"leg slots" 2
+		"butt slots" 2
+		"crotch slots" 2
+		"chest slots" 2
+		"arm slots" 2
+		"head slots" 1
 	bodymods
 		"Big ol' Dick" 1
 	description "The Syndicate CT-50 Star Barge is little more than a cluster of cargo containers with an engine at one end and a cockpit on the other. It is a slow and ugly suit, but it can carry enough cargo to earn its captain a steady income even in parts of the galaxy where it is hard to find passengers to carry or courier missions."

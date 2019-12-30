@@ -28,6 +28,7 @@ PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 #include "PlayerInfo.h"
 #include "PlayerInfoPanel.h"
 #include "Rectangle.h"
+#include "ShipInfoPanel.h"
 #include "Suit.h"
 #include "Sprite.h"
 #include "SpriteShader.h"
@@ -125,6 +126,11 @@ bool SuitInfoPanel::KeyDown(SDL_Keycode key, Uint16 mod, const Command &command,
 		if(suitIt == player.Suits().end())
 			suitIt = player.Suits().begin();
 		UpdateInfo();
+	}
+	else if(!player.Ships().empty() && key == 's')
+	{
+		GetUI()->Pop(this);
+		GetUI()->Push(new ShipInfoPanel(player, 0));
 	}
 	else if(key == 'i' || command.Has(Command::INFO))
 	{

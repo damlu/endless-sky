@@ -615,7 +615,7 @@ bool ShopPanel::ShouldHighlight(const Ship *ship)
 
 bool ShopPanel::ShouldHighlight(const Suit *suit)
 {
-	return (hoverButton == 't');
+	return (hoverButton == 'u');
 }
 
 

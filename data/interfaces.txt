@@ -924,6 +924,23 @@ interface "info panel"
 		from -250 30 to 250 280
 	box "cargo"
 		from 250 -290 to 500 280
+
+	visible if "suit tab"
+	sprite "ui/suit tab"
+		center 0 -310
+	label "Suit Info"
+		center -180 -305
+		color "bright"
+	label "Ship _Info"
+		center -300 -305
+	label "Player _Info"
+		center -420 -305
+	button i
+		center -420 -305
+		dimensions 120 30
+	button s
+		center -300 -305
+		dimensions 120 30
 	
 	visible if "ship tab"
 	button R
@@ -931,6 +948,8 @@ interface "info panel"
 		dimensions 250 30
 	sprite "ui/ship tab"
 		center 0 -310
+	label "Suit _Info"
+			center -180 -305
 	label "Ship Info"
 		center -300 -305
 		color "bright"
@@ -939,10 +958,15 @@ interface "info panel"
 	button i
 		center -420 -305
 		dimensions 120 30
+	button u
+		center -180 -305
+		dimensions 120 30
 	
 	visible if "player tab"
 	sprite "ui/player tab"
 		center 0 -310
+	label "Suit _Info"
+			center -180 -305
 	label "_Ship Info"
 		center -300 -305
 	label "Player Info"
@@ -951,7 +975,10 @@ interface "info panel"
 	button s
 		center -300 -305
 		dimensions 120 30
-	
+	button u
+		center -180 -305
+		dimensions 120 30
+
 	visible
 	button d "_Done"
 		center 455 305

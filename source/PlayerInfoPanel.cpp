@@ -191,12 +191,12 @@ bool PlayerInfoPanel::KeyDown(SDL_Keycode key, Uint16 mod, const Command &comman
 			GetUI()->Push(new ShipInfoPanel(player, selectedIndex));
 		}
 	}
-	else if(key == 't')
+	else if(key == 'u')
 	{
 		if(!player.Suits().empty())
 		{
 			GetUI()->Pop(this);
-			GetUI()->Push(new SuitInfoPanel(player, selectedIndex));
+			GetUI()->Push(new SuitInfoPanel(player, 0));
 		}
 	}
 	else if(key == SDLK_PAGEUP || key == SDLK_PAGEDOWN)

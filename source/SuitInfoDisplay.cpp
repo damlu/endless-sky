@@ -137,30 +137,16 @@ void SuitInfoDisplay::UpdateAttributes(const Suit &suit, const Depreciation &dep
 	attributeLabels.push_back(string());
 	attributeValues.push_back(string());
 	attributesHeight += 10;
-//	if(attributes.Get("shield generation"))
-//	{
-//		attributeLabels.push_back("shields charge / max:");
-//		attributeValues.push_back(Format::Number(60. * attributes.Get("shield generation"))
-//			+ " / " + Format::Number(attributes.Get("shields")));
-//	}
-//	else
-//	{
-//		attributeLabels.push_back("shields:");
-//		attributeValues.push_back(Format::Number(attributes.Get("shields")));
-//	}
+	attributeLabels.push_back("cum capacity:");
+	attributeValues.push_back(Format::Number(attributes.Get("cum capacity")));
 	attributesHeight += 20;
-//	if(attributes.Get("hull repair rate"))
-//	{
-//		attributeLabels.push_back("hull repair / max:");
-//		attributeValues.push_back(Format::Number(60. * attributes.Get("hull repair rate"))
-//			+ " / " + Format::Number(attributes.Get("hull")));
-//	}
-//	else
-//	{
-//		attributeLabels.push_back("hull:");
-//		attributeValues.push_back(Format::Number(attributes.Get("hull")));
-//	}
+
+	attributeLabels.push_back("milk capacity:");
+	attributeValues.push_back(Format::Number(attributes.Get("milk capacity")));
 	attributesHeight += 20;
+
+
+
 //	double emptyMass = suit.Mass();
 //	attributeLabels.push_back(isGeneric ? "mass with no cargo:" : "mass:");
 //	attributeValues.push_back(Format::Number(emptyMass));
@@ -224,7 +210,14 @@ void SuitInfoDisplay::UpdateAttributes(const Suit &suit, const Depreciation &dep
 //		"turret mounts free:", "turret mounts"
 //	};
     static const vector<string> NAMES = {
-            "bodymod space free:", "bodymod space"
+		"bodymod space free:", "bodymod space",
+		"leg slots free:", "leg slots",
+		"butt slots free:", "butt slots",
+		"crotch slots free:", "crotch slots",
+		"chest slots free:", "chest slots",
+		"    nipple slots free:", "nipple slots",
+		"arm slots free:", "arm slots",
+		"head slots free:", "head slots"
     };
 	for(unsigned i = 1; i < NAMES.size(); i += 2)
 		chassis[NAMES[i]] = attributes.Get(NAMES[i]);
