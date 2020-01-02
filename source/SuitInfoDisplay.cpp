@@ -20,8 +20,10 @@ PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 #include "Bodymod.h"
 #include "Suit.h"
 #include "Table.h"
+#include "pi.h"
 
 #include <algorithm>
+#include <cmath>
 #include <map>
 #include <sstream>
 
@@ -133,17 +135,75 @@ void SuitInfoDisplay::UpdateAttributes(const Suit &suit, const Depreciation &dep
 	}
 	attributeValues.push_back(Format::Credits(depreciated));
 	attributesHeight += 20;
+
+	attributeLabels.push_back(string());
+	attributeValues.push_back(string());
+	attributesHeight += 10;
+	attributeLabels.push_back("stamina:");
+	attributeValues.push_back(Format::Number(attributes.Get("stamina")));
+	attributesHeight += 20;
 	
 	attributeLabels.push_back(string());
 	attributeValues.push_back(string());
 	attributesHeight += 10;
-	attributeLabels.push_back("cum capacity:");
-	attributeValues.push_back(Format::Number(attributes.Get("cum capacity")));
+	attributeLabels.push_back("cocks:");
+	attributeValues.push_back(Format::Number(attributes.Get("cock count")));
+	attributesHeight += 20;
+	attributeLabels.push_back("cock length (cm):");
+	attributeValues.push_back(Format::Number(attributes.Get("cock length")));
+	attributesHeight += 20;
+	attributeLabels.push_back("cock girth (cm):");
+	attributeValues.push_back(Format::Number(attributes.Get("cock girth")));
+	attributesHeight += 20;
+	int cockSizeLevel = SuitInfoDisplay::CalculateCockSizeLevel(attributes.Get("cock length"), attributes.Get("cock girth"));
+	attributeLabels.push_back("cock size classification:");
+	attributeValues.push_back(GameData::Rating("cock size", cockSizeLevel));
 	attributesHeight += 20;
 
-	attributeLabels.push_back("milk capacity:");
-	attributeValues.push_back(Format::Number(attributes.Get("milk capacity")));
+	attributeLabels.push_back(string());
+	attributeValues.push_back(string());
+	attributesHeight += 10;
+	attributeLabels.push_back("balls:");
+	attributeValues.push_back(Format::Number(attributes.Get("ball count")));
 	attributesHeight += 20;
+	attributeLabels.push_back("ball size (cm):");
+	attributeValues.push_back(Format::Number(attributes.Get("ball size")));
+	attributesHeight += 20;
+	attributeLabels.push_back("cum production:");
+	attributeValues.push_back(Format::Number(attributes.Get("cum production")));
+	attributesHeight += 20;
+
+	attributeLabels.push_back(string());
+	attributeValues.push_back(string());
+	attributesHeight += 10;
+	attributeLabels.push_back("pussies:");
+	attributeValues.push_back(Format::Number(attributes.Get("vagina count")));
+	attributesHeight += 20;
+	attributeLabels.push_back("vaginal capacity:");
+	attributeValues.push_back(Format::Number(attributes.Get("vagina size")));
+	attributesHeight += 20;
+
+	attributeLabels.push_back(string());
+	attributeValues.push_back(string());
+	attributesHeight += 10;
+	attributeLabels.push_back("breast count:");
+	attributeValues.push_back(Format::Number(attributes.Get("breast count")));
+	attributesHeight += 20;
+	attributeLabels.push_back("breast size (cm):");
+	attributeValues.push_back(Format::Number(attributes.Get("breast size")));
+	attributesHeight += 20;
+	attributeLabels.push_back("milk production:");
+	attributeValues.push_back(Format::Number(attributes.Get("milk production")));
+	attributesHeight += 20;
+
+	attributeLabels.push_back(string());
+	attributeValues.push_back(string());
+	attributesHeight += 10;
+
+	attributeLabels.push_back("ass size:");
+	attributeValues.push_back(Format::Number(attributes.Get("ass size")));
+	attributesHeight += 20;
+
 
 
 
@@ -306,7 +366,29 @@ void SuitInfoDisplay::UpdateAttributes(const Suit &suit, const Depreciation &dep
 	attributesHeight += 30;
 }
 
+//// Determine the player's sexual reputation.
+//int sexRepLevel = log(max<int64_t>(1, player.GetCondition("sexual reputation")));
+//const string &sexRep = GameData::Rating("sex", sexRepLevel);
+//if(!combatRating.empty())
+//{
+//table.DrawGap(10);
+//table.DrawUnderline(dim);
+//table.Draw("sexual reputation:", bright);
+//table.Advance();
+//table.DrawGap(5);
+//
+//table.Draw(sexRep, dim);
+//table.Draw("(" + to_string(sexRepLevel) + ")", dim);
+//}
 
+int SuitInfoDisplay::CalculateCockSizeLevel(int length, int girth) {
+	float volume = length * ( girth * girth ) / ( 4 * PI);
+	return (int) log(volume);
+}
+
+int SuitInfoDisplay::CalculateCupSizeLevel(int volume) {
+	return (int) (volume / 60);
+}
 
 void SuitInfoDisplay::UpdateBodymods(const Suit &suit, const Depreciation &depreciation, int day)
 {

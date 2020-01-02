@@ -49,6 +49,8 @@ public:
 	virtual void DrawAttributes(const Point &topLeft) const override;
 	void DrawBodymods(const Point &topLeft) const;
 	void DrawSale(const Point &topLeft) const;
+
+	static int CalculateCockSizeLevel(int length, int girth);
 	
 	
 private:

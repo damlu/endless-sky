@@ -1,16 +1,29 @@
-Welcome to Endless Sky!
-version 0.9.9
+Welcome to Endless Sex!
+version 0.1.0
 
-This game is open source.
+This game is an open source
+NSFW adaptation of the superlative
+non-erotic game: Endless Sky.
+
 To report bugs, give feedback,
+support the project creator,
 or contribute to story writing,
 artwork, or programming, visit:
-https://endless-sky.github.io
-The game's Steam forums
-Discord (invite: ZeuASSx)
+https://www.patreon.com/user?u=____
+https://endless-sex.github.io
+
+Credit for the original game,
+which comprises most of the SFW
+code and content of this game,
+goes to the creators of and
+contributers to "Endless Sky",
+who will not be listed here by
+name in case they do not wish
+to be connected to this project.
+
 
 Programming
-  Michael Zahniser
+  Me
 
 Photos from Wikimedia Commons
   Berthold Werner (CC-BY-SA 3.0)
@@ -32,19 +45,6 @@ and from public domain sources
   unsplash.com
 
 Other Artwork
-  Michael Zahniser (CC-BY-SA 4.0)
-  Maximilian Korber (CC-BY-SA 4.0)
-  Iaz Poolar (CC-BY-SA 4.0)
-  Matthew Smestad (CC-BY-SA 4.0)
-  Jonathan Steck (CC-BY-SA 4.0)
-  Nate Graham (CC-BY-SA 4.0)
-  Evan Fluharty (CC-BY-SA 4.0)
-  Nick Barry (CC-BY-SA 3.0)
-  ESO / L. Calcada (CC-BY-4.0)
-  Becca Tommaso (CC-BY-SA 4.0)
-  Frederick Goy IV (CC-BY-SA 4.0)
-  Zachary Siple (CC-BY-SA 4.0)
-  Darcy Manoel (CC-BY-SA 4.0)
 
 Sounds from public domain sources
   freesound.org
@@ -53,11 +53,3 @@ For a full list of attributions,
 see the "copyright" file.
 
 Beta Testers
-  Remi Verschelde
-  Adam Borowski
-  Greg Pettigrew
-  Russell Zahniser
-  John Harvey
-  Sean Fahey
-  Mauricio Gomes
-  Iaz Poolar
