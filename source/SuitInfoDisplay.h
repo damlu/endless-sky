@@ -14,6 +14,7 @@ PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 #define SUIT_INFO_DISPLAY_H_
 
 #include "ItemInfoDisplay.h"
+#include "Bodymod.h"
 
 #include <string>
 #include <vector>
@@ -48,14 +49,16 @@ public:
 	// void DrawDescription(const Point &topLeft) const;
 	virtual void DrawAttributes(const Point &topLeft) const override;
 	void DrawBodymods(const Point &topLeft) const;
+	void DrawBodymodSlots(const Point &topLeft) const;
 	void DrawSale(const Point &topLeft) const;
 
-	static int CalculateCockSizeLevel(int length, int girth);
+	static std::string GetAnatomyRating(Bodymod attributes, std::string attributeName);
 	
 	
 private:
 	void UpdateAttributes(const Suit &suit, const Depreciation &depreciation, int day);
 	void UpdateBodymods(const Suit &suit, const Depreciation &depreciation, int day);
+	void UpdateBodymodSlots(const Suit &suit);
 	
 	
 private:
@@ -66,7 +69,12 @@ private:
 	std::vector<std::string> bodymodLabels;
 	std::vector<std::string> bodymodValues;
 	int bodymodsHeight = 0;
-	
+
+	std::vector<std::string> bodymodSlotsLabels;
+	std::vector<std::string> bodymodSlotsValues;
+	int bodymodSlotsHeight = 0;
+
+
 	std::vector<std::string> saleLabels;
 	std::vector<std::string> saleValues;
 	int saleHeight = 0;

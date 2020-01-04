@@ -44,6 +44,7 @@ void SuitInfoDisplay::Update(const Suit &suit, const Depreciation &depreciation,
 	UpdateDescription(suit.Description(), suit.Attributes().Licenses(), true);
 	UpdateAttributes(suit, depreciation, day);
 	UpdateBodymods(suit, depreciation, day);
+	UpdateBodymodSlots(suit);
 	
 	maximumHeight = max(descriptionHeight, max(attributesHeight, bodymodsHeight));
 }
@@ -101,6 +102,12 @@ void SuitInfoDisplay::DrawBodymods(const Point &topLeft) const
 	Draw(topLeft, bodymodLabels, bodymodValues);
 }
 
+void SuitInfoDisplay::DrawBodymodSlots(const Point &topLeft) const
+{
+	Draw(topLeft, bodymodSlotsLabels, bodymodSlotsValues);
+}
+
+
 
 
 void SuitInfoDisplay::DrawSale(const Point &topLeft) const
@@ -155,9 +162,8 @@ void SuitInfoDisplay::UpdateAttributes(const Suit &suit, const Depreciation &dep
 	attributeLabels.push_back("cock girth (cm):");
 	attributeValues.push_back(Format::Number(attributes.Get("cock girth")));
 	attributesHeight += 20;
-	int cockSizeLevel = SuitInfoDisplay::CalculateCockSizeLevel(attributes.Get("cock length"), attributes.Get("cock girth"));
-	attributeLabels.push_back("cock size classification:");
-	attributeValues.push_back(GameData::Rating("cock size", cockSizeLevel));
+	attributeLabels.push_back("cock size:");
+	attributeValues.push_back(SuitInfoDisplay::GetAnatomyRating(attributes, "cock size"));
 	attributesHeight += 20;
 
 	attributeLabels.push_back(string());
@@ -166,8 +172,11 @@ void SuitInfoDisplay::UpdateAttributes(const Suit &suit, const Depreciation &dep
 	attributeLabels.push_back("balls:");
 	attributeValues.push_back(Format::Number(attributes.Get("ball count")));
 	attributesHeight += 20;
-	attributeLabels.push_back("ball size (cm):");
+	attributeLabels.push_back("ball diameter (cm):");
 	attributeValues.push_back(Format::Number(attributes.Get("ball size")));
+	attributesHeight += 20;
+	attributeLabels.push_back("ball size:");
+	attributeValues.push_back(SuitInfoDisplay::GetAnatomyRating(attributes, "ball size"));
 	attributesHeight += 20;
 	attributeLabels.push_back("cum production:");
 	attributeValues.push_back(Format::Number(attributes.Get("cum production")));
@@ -179,18 +188,23 @@ void SuitInfoDisplay::UpdateAttributes(const Suit &suit, const Depreciation &dep
 	attributeLabels.push_back("pussies:");
 	attributeValues.push_back(Format::Number(attributes.Get("vagina count")));
 	attributesHeight += 20;
-	attributeLabels.push_back("vaginal capacity:");
-	attributeValues.push_back(Format::Number(attributes.Get("vagina size")));
+	attributeLabels.push_back("vaginal volume:");
+	attributeValues.push_back(Format::Number(attributes.Get("vaginal capacity")));
 	attributesHeight += 20;
-
+	attributeLabels.push_back("vaginal capacity:");
+	attributeValues.push_back(SuitInfoDisplay::GetAnatomyRating(attributes, "vaginal capacity"));
+	attributesHeight += 20;
 	attributeLabels.push_back(string());
 	attributeValues.push_back(string());
 	attributesHeight += 10;
 	attributeLabels.push_back("breast count:");
 	attributeValues.push_back(Format::Number(attributes.Get("breast count")));
 	attributesHeight += 20;
-	attributeLabels.push_back("breast size (cm):");
-	attributeValues.push_back(Format::Number(attributes.Get("breast size")));
+	attributeLabels.push_back("cup size:");
+	attributeValues.push_back(" (" + SuitInfoDisplay::GetAnatomyRating(attributes, "cup size") + "-cup) ");
+	attributesHeight += 20;
+	attributeLabels.push_back("breast size:");
+	attributeValues.push_back(SuitInfoDisplay::GetAnatomyRating(attributes, "breast size"));
 	attributesHeight += 20;
 	attributeLabels.push_back("milk production:");
 	attributeValues.push_back(Format::Number(attributes.Get("milk production")));
@@ -201,7 +215,7 @@ void SuitInfoDisplay::UpdateAttributes(const Suit &suit, const Depreciation &dep
 	attributesHeight += 10;
 
 	attributeLabels.push_back("ass size:");
-	attributeValues.push_back(Format::Number(attributes.Get("ass size")));
+	attributeValues.push_back(SuitInfoDisplay::GetAnatomyRating(attributes, "ass size"));
 	attributesHeight += 20;
 
 
@@ -260,41 +274,7 @@ void SuitInfoDisplay::UpdateAttributes(const Suit &suit, const Depreciation &dep
 //			+ " / " + Format::Number(60. * attributes.Get("turn") / emptyMass));
 //	attributesHeight += 20;
 	
-	// Find out how much bodymod, engine, and weapon space the chassis has.
-	map<string, double> chassis;
-//	static const vector<string> NAMES = {
-//		"bodymod space free:", "bodymod space",
-//		"    weapon capacity:", "weapon capacity",
-//		"    engine capacity:", "engine capacity",
-//		"gun ports free:", "gun ports",
-//		"turret mounts free:", "turret mounts"
-//	};
-    static const vector<string> NAMES = {
-		"bodymod space free:", "bodymod space",
-		"leg slots free:", "leg slots",
-		"butt slots free:", "butt slots",
-		"crotch slots free:", "crotch slots",
-		"chest slots free:", "chest slots",
-		"    nipple slots free:", "nipple slots",
-		"arm slots free:", "arm slots",
-		"head slots free:", "head slots"
-    };
-	for(unsigned i = 1; i < NAMES.size(); i += 2)
-		chassis[NAMES[i]] = attributes.Get(NAMES[i]);
-	for(const auto &it : suit.Bodymods())
-		for(auto &cit : chassis)
-			cit.second -= it.second * it.first->Get(cit.first);
-	
-	attributeLabels.push_back(string());
-	attributeValues.push_back(string());
-	attributesHeight += 10;
-	for(unsigned i = 0; i < NAMES.size(); i += 2)
-	{
-		attributeLabels.push_back(NAMES[i]);
-		attributeValues.push_back(Format::Number(attributes.Get(NAMES[i + 1]))
-			+ " / " + Format::Number(chassis[NAMES[i + 1]]));
-		attributesHeight += 20;
-	}
+
 	
 //	if(suit.BaysFree(false))
 //	{
@@ -366,36 +346,71 @@ void SuitInfoDisplay::UpdateAttributes(const Suit &suit, const Depreciation &dep
 	attributesHeight += 30;
 }
 
-//// Determine the player's sexual reputation.
-//int sexRepLevel = log(max<int64_t>(1, player.GetCondition("sexual reputation")));
-//const string &sexRep = GameData::Rating("sex", sexRepLevel);
-//if(!combatRating.empty())
-//{
-//table.DrawGap(10);
-//table.DrawUnderline(dim);
-//table.Draw("sexual reputation:", bright);
-//table.Advance();
-//table.DrawGap(5);
-//
-//table.Draw(sexRep, dim);
-//table.Draw("(" + to_string(sexRepLevel) + ")", dim);
-//}
 
-int SuitInfoDisplay::CalculateCockSizeLevel(int length, int girth) {
-	float volume = length * ( girth * girth ) / ( 4 * PI);
-	return (int) log(volume);
-}
-
-int SuitInfoDisplay::CalculateCupSizeLevel(int volume) {
-	return (int) (volume / 60);
+string SuitInfoDisplay::GetAnatomyRating(Bodymod attributes, string attributeName) {
+	if (attributeName == "cock size") {
+		int length = attributes.Get("cock length");
+		int girth = attributes.Get("cock girth");
+		float volume = length * ( girth * girth ) / ( 4 * PI);
+		return GameData::Rating(attributeName, (int) log(volume));
+	} else if (attributeName == "breast size") {
+		return  GameData::Rating(attributeName, (int) log(attributes.Get(attributeName)));
+	} else if (attributeName == "cup size") {
+		return  GameData::Rating(attributeName, (int) (attributes.Get(attributeName) / 60));
+	} else if (attributeName == "ball size") {
+		return  GameData::Rating(attributeName, (int) log(attributes.Get(attributeName)));
+	} else if (attributeName == "vaginal capacity") {
+		return  GameData::Rating(attributeName, (int) log(attributes.Get(attributeName)));
+	} else if (attributeName == "ass size") {
+		return  GameData::Rating(attributeName, (int) log(attributes.Get(attributeName)));
+	} else if (attributeName == "cum production") {
+		return  GameData::Rating(attributeName, (int) log(attributes.Get(attributeName)));
+	} else if (attributeName == "milk production") {
+		return  GameData::Rating(attributeName, (int) log(attributes.Get(attributeName)));
+	}
+	return 0;
 }
 
 void SuitInfoDisplay::UpdateBodymods(const Suit &suit, const Depreciation &depreciation, int day)
 {
 	bodymodLabels.clear();
 	bodymodValues.clear();
-	bodymodsHeight = 20;
-	
+	bodymodsHeight = 0;
+
+	// Find out how much bodymod, engine, and weapon space the chassis has.
+	const Bodymod &attributes = suit.Attributes();
+	map<string, double> chassis;
+	static const vector<string> NAMES = {
+			"bodymod space free:", "bodymod space",
+			"leg slots free:", "leg slots",
+			"butt slots free:", "butt slots",
+			"crotch slots free:", "crotch slots",
+			"chest slots free:", "chest slots",
+			"    nipple slots free:", "nipple slots",
+			"arm slots free:", "arm slots",
+			"head slots free:", "head slots"
+	};
+	for(unsigned i = 1; i < NAMES.size(); i += 2)
+		chassis[NAMES[i]] = attributes.Get(NAMES[i]);
+	for(const auto &it : suit.Bodymods())
+		for(auto &cit : chassis)
+			cit.second -= it.second * it.first->Get(cit.first);
+
+	bodymodLabels.push_back(string());
+	bodymodValues.push_back(string());
+	bodymodsHeight += 10;
+	for(unsigned i = 0; i < NAMES.size(); i += 2)
+	{
+		bodymodLabels.push_back(NAMES[i]);
+		bodymodValues.push_back(Format::Number(attributes.Get(NAMES[i + 1]))
+								  + " / " + Format::Number(chassis[NAMES[i + 1]]));
+		bodymodsHeight += 20;
+	}
+
+	bodymodLabels.push_back(string());
+	bodymodValues.push_back(string());
+	bodymodsHeight += 10;
+
 	map<string, map<string, int>> listing;
 	for(const auto &it : suit.Bodymods())
 		listing[it.first->Category()][it.first->Name()] += it.second;
@@ -438,4 +453,46 @@ void SuitInfoDisplay::UpdateBodymods(const Suit &suit, const Depreciation &depre
 	saleLabels.push_back("  + bodymods:");
 	saleValues.push_back(Format::Credits(totalCost - chassisCost));
 	saleHeight += 5;
+}
+
+
+void SuitInfoDisplay::UpdateBodymodSlots(const Suit &suit)
+{
+	bodymodSlotsLabels.clear();
+	bodymodSlotsValues.clear();
+	bodymodSlotsHeight = 0;
+
+	// Find out how much bodymod, engine, and weapon space the chassis has.
+	const Bodymod &attributes = suit.Attributes();
+	map<string, double> chassis;
+	static const vector<string> NAMES = {
+			"bodymod space free:", "bodymod space",
+			"leg slots free:", "leg slots",
+			"butt slots free:", "butt slots",
+			"crotch slots free:", "crotch slots",
+			"chest slots free:", "chest slots",
+			"    nipple slots free:", "nipple slots",
+			"arm slots free:", "arm slots",
+			"head slots free:", "head slots"
+	};
+	for(unsigned i = 1; i < NAMES.size(); i += 2)
+		chassis[NAMES[i]] = attributes.Get(NAMES[i]);
+	for(const auto &it : suit.Bodymods())
+		for(auto &cit : chassis)
+			cit.second -= it.second * it.first->Get(cit.first);
+
+	bodymodSlotsLabels.push_back(string());
+	bodymodSlotsValues.push_back(string());
+	bodymodSlotsHeight += 10;
+	for(unsigned i = 0; i < NAMES.size(); i += 2)
+	{
+		bodymodSlotsLabels.push_back(NAMES[i]);
+		bodymodSlotsValues.push_back(Format::Number(attributes.Get(NAMES[i + 1]))
+								+ " / " + Format::Number(chassis[NAMES[i + 1]]));
+		bodymodSlotsHeight += 20;
+	}
+
+	bodymodSlotsLabels.push_back(string());
+	bodymodSlotsValues.push_back(string());
+	bodymodSlotsHeight += 10;
 }

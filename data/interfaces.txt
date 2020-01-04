@@ -925,6 +925,13 @@ interface "info panel"
 	box "cargo"
 		from 250 -290 to 500 280
 
+	box "suit stats"
+		from -500 -290 to -250 280
+	box "bodymod slots"
+		from -250 -290 to 0 -90
+	box "bodymods"
+		from -250 -90 to 250 280
+
 	visible if "suit tab"
 	sprite "ui/suit tab"
 		center 0 -310

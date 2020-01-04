@@ -58,6 +58,8 @@ private:
 	// Draw the suit tab (and its subsections).
 	void DrawSuitStats(const Rectangle &bounds);
 	void DrawBodymods(const Rectangle &bounds);
+	void DrawBodymodSlots(const Rectangle &bounds);
+
 //	void DrawWeapons(const Rectangle &bounds);
 //	void DrawCargo(const Rectangle &bounds);
 	

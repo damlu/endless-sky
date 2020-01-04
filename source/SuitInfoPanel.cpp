@@ -99,8 +99,9 @@ void SuitInfoPanel::Draw()
 	zones.clear();
 	commodityZones.clear();
 	plunderZones.clear();
-	DrawSuitStats(interface->GetBox("stats"));
+	DrawSuitStats(interface->GetBox("suit stats"));
 	DrawBodymods(interface->GetBox("bodymods"));
+	DrawBodymodSlots(interface->GetBox("bodymod slots"));
 	
 	// If the player hovers their mouse over a suit attribute, show its tooltip.
 	info.DrawTooltips();
@@ -258,6 +259,28 @@ void SuitInfoPanel::DrawSuitStats(const Rectangle &bounds)
 }
 
 
+//
+//void SuitInfoPanel::DrawBodymodSlots(const Rectangle &bounds)
+//{
+//	// Check that the specified area is big enough.
+//	if(bounds.Width() < WIDTH)
+//		return;
+//
+//	const Suit &suit = **suitIt;
+//	const Font &font = FontSet::Get(14);
+//
+//	// Table attributes.
+//	Table table;
+//	table.AddColumn(0, Table::LEFT);
+//	table.AddColumn(WIDTH - 20, Table::RIGHT);
+//	table.SetUnderline(0, WIDTH - 20);
+//	table.DrawAt(bounds.TopLeft() + Point(10., 8.));
+//
+//	info.DrawAttributes(table.GetRowBounds().TopLeft() - Point(10., 10.));
+//}
+//
+
+
 
 void SuitInfoPanel::DrawBodymods(const Rectangle &bounds)
 {
@@ -277,6 +300,7 @@ void SuitInfoPanel::DrawBodymods(const Rectangle &bounds)
 	table.SetUnderline(0, WIDTH - 20);
 	Point start = bounds.TopLeft() + Point(10., 8.);
 	table.DrawAt(start);
+
 	
 	// Draw the bodymods in the same order used in the bodymodder.
 	for(const string &category : Bodymod::CATEGORIES)
@@ -330,6 +354,25 @@ void SuitInfoPanel::DrawBodymods(const Rectangle &bounds)
 //	}
 }
 
+
+void SuitInfoPanel::DrawBodymodSlots(const Rectangle &bounds)
+{
+	// Check that the specified area is big enough.
+	if(bounds.Width() < WIDTH)
+		return;
+
+	const Suit &suit = **suitIt;
+	const Font &font = FontSet::Get(14);
+
+	// Table attributes.
+	Table table;
+	table.AddColumn(0, Table::LEFT);
+	table.AddColumn(WIDTH - 20, Table::RIGHT);
+	table.SetUnderline(0, WIDTH - 20);
+	table.DrawAt(bounds.TopLeft() + Point(10., 8.));
+
+	info.DrawBodymodSlots(table.GetRowBounds().TopLeft() - Point(10., 10.));
+}
 
 
 //void SuitInfoPanel::DrawWeapons(const Rectangle &bounds)
