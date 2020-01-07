@@ -66,6 +66,11 @@ void Bodymod::Load(const DataNode &node)
 			description += child.Token(1);
 			description += '\n';
 		}
+		else if(child.Token(0) == "anatomy description" && child.Size() >= 2)
+		{
+			description += child.Token(1);
+			description += '\n';
+		}
 		else if(child.Token(0) == "cost" && child.Size() >= 2)
 			cost = child.Value(1);
 		else if(child.Token(0) == "mass" && child.Size() >= 2)
@@ -110,6 +115,10 @@ const string &Bodymod::Description() const
 	return description;
 }
 
+const string &Bodymod::AnatomyDescription() const
+{
+	return anatomyDescription;
+}
 
 
 // Get the licenses needed to purchase this bodymod.

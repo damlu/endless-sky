@@ -35,6 +35,10 @@ ItemInfoDisplay::ItemInfoDisplay()
 	description.SetAlignment(WrappedText::JUSTIFIED);
 	description.SetWrapWidth(WIDTH - 20);
 	description.SetFont(FontSet::Get(14));
+
+	anatomyDescription.SetAlignment(WrappedText::JUSTIFIED);
+	anatomyDescription.SetWrapWidth(WIDTH - 20);
+	anatomyDescription.SetFont(FontSet::Get(14));
 	
 	hoverText.SetAlignment(WrappedText::JUSTIFIED);
 	hoverText.SetWrapWidth(WIDTH - 20);
@@ -64,6 +68,10 @@ int ItemInfoDisplay::DescriptionHeight() const
 	return descriptionHeight;
 }
 
+int ItemInfoDisplay::AnatomyDescriptionHeight() const
+{
+	return anatomyDescriptionHeight;
+}
 
 
 int ItemInfoDisplay::AttributesHeight() const
@@ -79,6 +87,11 @@ void ItemInfoDisplay::DrawDescription(const Point &topLeft) const
 	description.Draw(topLeft + Point(10., 12.), *GameData::Colors().Get("medium"));
 }
 
+
+void ItemInfoDisplay::DrawAnatomyDescription(const Point &topLeft) const
+{
+	anatomyDescription.Draw(topLeft + Point(10., 12.), *GameData::Colors().Get("medium"));
+}
 
 
 void ItemInfoDisplay::DrawAttributes(const Point &topLeft) const
@@ -156,6 +169,13 @@ void ItemInfoDisplay::UpdateDescription(const string &text, const vector<string>
 	
 	// Pad by 10 pixels on the top and bottom.
 	descriptionHeight = description.Height() + 20;
+}
+
+void ItemInfoDisplay::UpdateAnatomyDescription(const string &text, bool isSuit)
+{
+	anatomyDescription.Wrap(text);
+	// Pad by 10 pixels on the top and bottom.
+	anatomyDescriptionHeight = anatomyDescription.Height() + 20;
 }
 
 

@@ -50,6 +50,7 @@ public:
 	const std::string &PluralName() const;
 	const std::string &Category() const;
 	const std::string &Description() const;
+	const std::string &AnatomyDescription() const;
 	int64_t Cost() const;
 	double Mass() const;
 	// Get the licenses needed to buy or operate this ship.
@@ -81,6 +82,7 @@ private:
 	std::string pluralName;
 	std::string category;
 	std::string description;
+	std::string anatomyDescription;
 	const Sprite *thumbnail = nullptr;
 	int64_t cost = 0;
 	double mass = 0.;

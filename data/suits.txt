@@ -40,4 +40,4 @@ suit "Suit 2"
 		"Big ol' Dick" 1
 	description "The Syndicate CT-50 Star Barge is little more than a cluster of cargo containers with an engine at one end and a cockpit on the other. It is a slow and ugly suit, but it can carry enough cargo to earn its captain a steady income even in parts of the galaxy where it is hard to find passengers to carry or courier missions."
 	description "	Because they often carry valuable cargo, and because they are too slow to evade any attackers, Star Barges are a common target of pirates."
-	info "Your torso is a DT-50 Star Barge, which is pretty weird, because that's a spaceship."
+	"anatomy description" "Your torso is a DT-50 Star Barge, which is pretty weird, because that's a spaceship."

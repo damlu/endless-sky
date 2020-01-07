@@ -68,6 +68,8 @@ public:
 	const std::string &Noun() const;
 	// Get this suit's description.
 	const std::string &Description() const;
+	// Get this suit's anatomy description.
+	const std::string &AnatomyDescription() const;
 	// Get the suityard thumbnail for this suit.
 	const Sprite *Thumbnail() const;
 	// Get this suit's cost.
@@ -122,6 +124,7 @@ private:
 	std::string pluralModelName;
 	std::string noun;
 	std::string description;
+	std::string anatomyDescription;
 	const Sprite *thumbnail = nullptr;
 	// Characteristics of this particular suit:
 	std::string name;

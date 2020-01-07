@@ -35,10 +35,12 @@ public:
 	// Get the height of each of the panels.
 	int MaximumHeight() const;
 	int DescriptionHeight() const;
+	int AnatomyDescriptionHeight() const;
 	int AttributesHeight() const;
 	
 	// Draw each of the panels.
 	void DrawDescription(const Point &topLeft) const;
+	void DrawAnatomyDescription(const Point &topLeft) const;
 	virtual void DrawAttributes(const Point &topLeft) const;
 	void DrawTooltips() const;
 	
@@ -49,6 +51,7 @@ public:
 	
 protected:
 	void UpdateDescription(const std::string &text, const std::vector<std::string> &licenses, bool isShip);
+	void UpdateAnatomyDescription(const std::string &text, bool isSuit);
 	Point Draw(Point point, const std::vector<std::string> &labels, const std::vector<std::string> &values) const;
 	void CheckHover(const Table &table, const std::string &label) const;
 	
@@ -58,6 +61,9 @@ protected:
 	
 	WrappedText description;
 	int descriptionHeight = 0;
+
+	WrappedText anatomyDescription;
+	int anatomyDescriptionHeight = 0;
 	
 	std::vector<std::string> attributeLabels;
 	std::vector<std::string> attributeValues;

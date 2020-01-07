@@ -102,6 +102,7 @@ void SuitInfoPanel::Draw()
 	DrawSuitStats(interface->GetBox("suit stats"));
 	DrawBodymods(interface->GetBox("bodymods"));
 	DrawBodymodSlots(interface->GetBox("bodymod slots"));
+	DrawAnatomyDescription(interface->GetBox("anatomy"));
 	
 	// If the player hovers their mouse over a suit attribute, show its tooltip.
 	info.DrawTooltips();
@@ -373,6 +374,20 @@ void SuitInfoPanel::DrawBodymodSlots(const Rectangle &bounds)
 
 	info.DrawBodymodSlots(table.GetRowBounds().TopLeft() - Point(10., 10.));
 }
+
+
+void SuitInfoPanel::DrawAnatomyDescription(const Rectangle &bounds)
+{
+	// Check that the specified area is big enough.
+	if(bounds.Width() < WIDTH)
+		return;
+
+	const Suit &suit = **suitIt;
+	const Font &font = FontSet::Get(14);
+
+	info.DrawAnatomyDescription(bounds.TopLeft() - Point(10., 10.));
+}
+
 
 
 //void SuitInfoPanel::DrawWeapons(const Rectangle &bounds)

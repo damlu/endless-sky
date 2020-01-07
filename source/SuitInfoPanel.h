@@ -59,6 +59,7 @@ private:
 	void DrawSuitStats(const Rectangle &bounds);
 	void DrawBodymods(const Rectangle &bounds);
 	void DrawBodymodSlots(const Rectangle &bounds);
+	void DrawAnatomyDescription(const Rectangle &bounds);
 
 //	void DrawWeapons(const Rectangle &bounds);
 //	void DrawCargo(const Rectangle &bounds);

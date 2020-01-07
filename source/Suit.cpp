@@ -76,6 +76,7 @@ void Suit::Load(const DataNode &node)
 	// to override one suit definition with another.
 	bool hasBodymods = false;
 	bool hasDescription = false;
+	bool hasAnatomyDescription = false;
 	for(const DataNode &child : node)
 	{
 		const string &key = child.Token(0);
@@ -136,6 +137,16 @@ void Suit::Load(const DataNode &node)
 			description += child.Token(1);
 			description += '\n';
 		}
+		else if(key == "anatomy description" && child.Size() >= 2)
+		{
+			if(!hasAnatomyDescription)
+			{
+				anatomyDescription.clear();
+				hasAnatomyDescription = true;
+			}
+			anatomyDescription += child.Token(1);
+			anatomyDescription += '\n';
+		}
 		else if(key != "actions")
 			child.PrintTrace("Skipping unrecognized attribute:");
 	}
@@ -176,6 +187,8 @@ void Suit::FinishLoading(bool isNewInstance)
 			bodymods = base->bodymods;
 		if(description.empty())
 			description = base->description;
+		if(anatomyDescription.empty())
+			description = base->anatomyDescription;
 	}
 
 	if(addAttributes)
@@ -325,6 +338,11 @@ const string &Suit::Description() const
 	return description;
 }
 
+// Get this suit's description.
+const string &Suit::AnatomyDescription() const
+{
+	return anatomyDescription;
+}
 
 
 // Get the suityard thumbnail for this suit.

@@ -931,6 +931,8 @@ interface "info panel"
 		from -250 -290 to 0 -90
 	box "bodymods"
 		from -250 -90 to 250 280
+	box "anatomy"
+		from 250 -290 to 750 280
 
 	visible if "suit tab"
 	sprite "ui/suit tab"

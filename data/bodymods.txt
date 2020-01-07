@@ -16,4 +16,4 @@ bodymod "Big ol' Dick"
 	"crotch slots" -1
 	"cock count" 1
 	description "It's a big ol' donger."
-	info "You've got a big honkin' slab o' cockmeat swinging from your crotch."
+	"anatomy description" "You've got a big honkin' slab o' cockmeat swinging from your crotch."

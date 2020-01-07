@@ -42,6 +42,7 @@ SuitInfoDisplay::SuitInfoDisplay(const Suit &suit, const Depreciation &depreciat
 void SuitInfoDisplay::Update(const Suit &suit, const Depreciation &depreciation, int day)
 {
 	UpdateDescription(suit.Description(), suit.Attributes().Licenses(), true);
+	UpdateAnatomyDescription(suit.AnatomyDescription(), true);
 	UpdateAttributes(suit, depreciation, day);
 	UpdateBodymods(suit, depreciation, day);
 	UpdateBodymodSlots(suit);
